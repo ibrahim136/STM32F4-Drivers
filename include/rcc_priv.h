@@ -40,7 +40,9 @@ typedef struct
 
 #define RCC_reg ((volatile RCC_reg_t*) RCC_BASE)
 
-//RCC_CR register bit numbers
+//RCC_CR register
+
+//bit numbers
 #define RCC_CR_HSION 0
 #define RCC_CR_HSIRDY 1
 #define RCC_CR_HSITRIM 3
@@ -53,6 +55,10 @@ typedef struct
 #define RCC_CR_PLLRDY 25
 #define RCC_CR_PLLI2SON  26
 #define RCC_CR_PLLI2SRDY  27
+//bit masking
+#define RCC_CR_HSITRIM_MASK (0x1FUL << RCC_CR_HSITRIM)
+#define RCC_CR_HSICAL_MASK (0xFFUL << RCC_CR_HSICAL)
+
 
 
 #endif
