@@ -3,6 +3,8 @@
 
 #include "STD_types.h"
 
+#define TIMEOUT 100000
+
 #define RCC_BASE ((volatile u32 *)(0x40023800UL))
 
 typedef struct 
