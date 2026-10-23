@@ -80,12 +80,84 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
         Clear_Mask(RCC_reg->RCC_CFGR,RCC_CFGR_SW_MASK);
-        Set_Mask(RCC_reg->RCC_CFGR,Loc_u8targetSWValue);
+        Set_Mask(RCC_reg->RCC_CFGR,Loc_u8targetSWValue << RCC_CFGR_SW);
         while (   (RCC_reg->RCC_CFGR & RCC_CFGR_SWS_MASK)  != (Loc_u8targetSWValue << RCC_CFGR_SWS)  && --Loc_u32TimeOut       );
         if (Loc_u32TimeOut == 0){
             Loc_enuRCC_Error_Status = RCC_Timeout;
         }
     }
 
+    return Loc_enuRCC_Error_Status;
+}
+
+RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler)
+{
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    u32 Loc_u8TargetToSetMask = 0x00UL;
+    u32 Loc_u8TargetToClearMask = 0x00UL;
+    switch (Copy_enuBus)
+    {
+    case AHB:
+        if (Copy_enuPrescaler >= Prescaler512 || Copy_enuPrescaler <= Prescaler0)
+        {
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+        }
+        if (Copy_enuPrescaler > Prescaler0)
+        {
+            Loc_u8TargetToSetMask |= (1<<3);
+        }
+        break;
+    case APB1:
+        if (Copy_enuPrescaler >= Prescaler16 || Copy_enuPrescaler <= Prescaler0)
+        {
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+        }
+        if (Copy_enuPrescaler > Prescaler0)
+        {
+            Loc_u8TargetToSetMask |= (1<<2);
+        }
+        break;
+    case APB2:
+        if (Copy_enuPrescaler >= Prescaler16 || Copy_enuPrescaler <= Prescaler0)
+        {
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+        }
+        if (Copy_enuPrescaler > Prescaler0)
+        {
+            Loc_u8TargetToSetMask |= (1<<2);
+        }
+        break;
+    default:
+        Loc_enuRCC_Error_Status = RCC_InvalidParam;
+        break;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        Loc_u8TargetToSetMask |= Copy_enuPrescaler;
+            switch (Copy_enuBus)
+        {
+        case AHB:
+            Loc_u8TargetToSetMask <<= RCC_CFGR_HPRE;
+            Loc_u8TargetToClearMask = RCC_CFGR_HPRE_MASK;
+            break;
+        case APB1:
+            Loc_u8TargetToSetMask <<= RCC_CFGR_PPRE1;
+            Loc_u8TargetToClearMask = RCC_CFGR_PPRE1_MASK;
+            break;
+        case APB2:
+            Loc_u8TargetToSetMask <<= RCC_CFGR_PPRE2;
+            Loc_u8TargetToClearMask = RCC_CFGR_PPRE2_MASK;
+            break;
+        default:
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+            break;
+        }
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        Clear_Mask(RCC_reg->RCC_CFGR,Loc_u8TargetToClearMask);
+        Set_Mask(RCC_reg->RCC_CFGR,Loc_u8TargetToSetMask);
+        
+    }
     return Loc_enuRCC_Error_Status;
 }
