@@ -98,7 +98,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     switch (Copy_enuBus)
     {
     case AHB:
-        if (Copy_enuPrescaler >= Prescaler512 || Copy_enuPrescaler <= Prescaler0)
+        if (Copy_enuPrescaler > Prescaler512 || Copy_enuPrescaler < Prescaler0)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -108,7 +108,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         break;
     case APB1:
-        if (Copy_enuPrescaler >= Prescaler16 || Copy_enuPrescaler <= Prescaler0)
+        if (Copy_enuPrescaler > Prescaler16 || Copy_enuPrescaler < Prescaler0)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -118,7 +118,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         break;
     case APB2:
-        if (Copy_enuPrescaler >= Prescaler16 || Copy_enuPrescaler <= Prescaler0)
+        if (Copy_enuPrescaler > Prescaler16 || Copy_enuPrescaler < Prescaler0)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -161,3 +161,4 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     }
     return Loc_enuRCC_Error_Status;
 }
+
