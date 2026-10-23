@@ -98,33 +98,30 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     switch (Copy_enuBus)
     {
     case AHB:
-        if (Copy_enuPrescaler > Prescaler512 || Copy_enuPrescaler < Prescaler0)
+        if (Copy_enuPrescaler > AHB_PRE_512 || Copy_enuPrescaler < AHB_PRE_1)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
-        if (Copy_enuPrescaler > Prescaler0)
-        {
-            Loc_u8TargetToSetMask |= (1<<3);
+        else{
+            Loc_u8TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     case APB1:
-        if (Copy_enuPrescaler > Prescaler16 || Copy_enuPrescaler < Prescaler0)
+        if (Copy_enuPrescaler > APB1_PRE_16 || Copy_enuPrescaler < APB1_PRE_1)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
-        if (Copy_enuPrescaler > Prescaler0)
-        {
-            Loc_u8TargetToSetMask |= (1<<2);
+        else{
+            Loc_u8TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     case APB2:
-        if (Copy_enuPrescaler > Prescaler16 || Copy_enuPrescaler < Prescaler0)
+        if (Copy_enuPrescaler > APB2_PRE_16 || Copy_enuPrescaler < APB2_PRE_1)
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
-        if (Copy_enuPrescaler > Prescaler0)
-        {
-            Loc_u8TargetToSetMask |= (1<<2);
+        else{
+            Loc_u8TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     default:

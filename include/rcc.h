@@ -25,15 +25,28 @@ typedef enum{
 }BUS_Type_t;
 
 typedef enum{
-    Prescaler0=0x00UL,
-    Prescaler2=0x00UL,
-    Prescaler4=0x01UL,
-    Prescaler8=0x02UL,
-    Prescaler16=0x03UL,
-    Prescaler64=0x04UL,
-    Prescaler128=0x05UL,
-    Prescaler256=0x06UL,
-    Prescaler512=0x07UL,
+    AHB_PRE_1=0x00UL,
+    AHB_PRE_2=0x08UL,
+    AHB_PRE_4=0x09UL,
+    AHB_PRE_8=0x0AUL,
+    AHB_PRE_16=0x0BUL,
+    AHB_PRE_64=0x0CUL,
+    AHB_PRE_128=0x0DUL,
+    AHB_PRE_256=0x0EUL,
+    AHB_PRE_512=0x0FUL,
+
+    APB1_PRE_1=0x00UL,
+    APB1_PRE_2=0x04UL,
+    APB1_PRE_4=0x05UL,
+    APB1_PRE_8=0x06UL,
+    APB1_PRE_16=0x07UL,
+
+    APB2_PRE_1=0x00UL,
+    APB2_PRE_2=0x04UL,
+    APB2_PRE_4=0x05UL,
+    APB2_PRE_8=0x06UL,
+    APB2_PRE_16=0x07UL,
+    
 
 }Prescaler_t;
 
