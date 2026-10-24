@@ -54,53 +54,61 @@ typedef enum
 
 } Prescaler_t;
 
+typedef enum{
+    AHB1_BUS=0UL << 5,
+    AHB2_BUS=1UL << 5,
+    APB1_BUS=2UL << 5,
+    APB2_BUS=3UL << 5,
+
+}Peripheral_Bus_t;
+
 typedef enum
 {
     // AHB1 peripheral clock enable register
-    Peripheral_GPIOA = 0,
-    Peripheral_GPIOB = 1,
-    Peripheral_GPIOC = 2,
-    Peripheral_GPIOD = 3,
-    Peripheral_GPIOE = 4,
-    Peripheral_GPIOH = 7,
-    Peripheral_CRC = 12,
-    Peripheral_DMA1 = 21,
-    Peripheral_DMA2 = 22,
+    Peripheral_GPIOA = (AHB1_BUS |0),
+    Peripheral_GPIOB = (AHB1_BUS |1),
+    Peripheral_GPIOC = (AHB1_BUS |2),
+    Peripheral_GPIOD = (AHB1_BUS |3),
+    Peripheral_GPIOE = (AHB1_BUS |4),
+    Peripheral_GPIOH = (AHB1_BUS |7),
+    Peripheral_CRC = (AHB1_BUS |12),
+    Peripheral_DMA1 = (AHB1_BUS |21),
+    Peripheral_DMA2 = (AHB1_BUS |22),
 
     // AHB2 peripheral clock enable register
-    Peripheral_OTGFS = 0,
+    Peripheral_OTGFS = (AHB2_BUS | 0),
 
     // APB1 peripheral clock enable register
-    Peripheral_TIM2 = 0,
-    Peripheral_TIM3 = 1,
-    Peripheral_TIM4 = 2,
-    Peripheral_TIM5 = 3,
-    Peripheral_WWDG = 11,
-    Peripheral_SPI2 = 14,
-    Peripheral_SPI3 = 15,
-    Peripheral_USART2 = 17,
-    Peripheral_I2C1 = 21,
-    Peripheral_I2C2 = 22,
-    Peripheral_I2C3 = 23,
-    Peripheral_PWR = 28,
+    Peripheral_TIM2 = (APB1_BUS |0),
+    Peripheral_TIM3 = (APB1_BUS |1),
+    Peripheral_TIM4 = (APB1_BUS |2),
+    Peripheral_TIM5 = (APB1_BUS |3),
+    Peripheral_WWDG = (APB1_BUS |11),
+    Peripheral_SPI2 = (APB1_BUS |14),
+    Peripheral_SPI3 = (APB1_BUS |15),
+    Peripheral_USART2 = (APB1_BUS |17),
+    Peripheral_I2C1 = (APB1_BUS |21),
+    Peripheral_I2C2 = (APB1_BUS |22),
+    Peripheral_I2C3 = (APB1_BUS |23),
+    Peripheral_PWR = (APB1_BUS |28),
 
     // APB2 peripheral clock enable register
-    Peripheral_TIM1 = 0,
-    Peripheral_USART1 = 4,
-    Peripheral_USART6 = 5,
-    Peripheral_ADC1 = 8,
-    Peripheral_SDIO = 11,
-    Peripheral_SPI1 = 12,
-    Peripheral_SPI4 = 13,
-    Peripheral_SYSCFG = 14,
-    Peripheral_TIM9 = 16,
-    Peripheral_TIM10 = 17,
-    Peripheral_TIM11 = 18,
+    Peripheral_TIM1 = (APB2_BUS |0),
+    Peripheral_USART1 = (APB2_BUS |4),
+    Peripheral_USART6 = (APB2_BUS |5),
+    Peripheral_ADC1 = (APB2_BUS |8),
+    Peripheral_SDIO = (APB2_BUS |11),
+    Peripheral_SPI1 = (APB2_BUS |12),
+    Peripheral_SPI4 = (APB2_BUS |13),
+    Peripheral_SYSCFG = (APB2_BUS |14),
+    Peripheral_TIM9 = (APB2_BUS |16),
+    Peripheral_TIM10 = (APB2_BUS |17),
+    Peripheral_TIM11 = (APB2_BUS |18),
 
-} Peripherals_t;
+} Peripheral_t;
 
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus);
 RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType);
 RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler);
-
+RCC_Error_Status_t RCC_enuEnablePeripheral(Peripheral_t Copy_enuPeripheral);
 #endif
