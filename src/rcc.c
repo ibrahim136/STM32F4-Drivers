@@ -163,3 +163,8 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     }
     return Loc_enuRCC_Error_Status;
 }
+
+RCC_Error_Status_t RCC_enuEnablePeripheral(Peripheral_t Copy_enuPeripheral)
+{
+    
+}
