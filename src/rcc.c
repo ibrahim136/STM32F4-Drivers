@@ -46,7 +46,6 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
     }
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
-        u32 Loc_u8readytbit_MASK = (1UL << Loc_u8readytbit);
         while ((Get_bit(RCC_reg->RCC_CR, Loc_u8readytbit) != Loc_u8check) && (Loc_u32TimeOut--))
             ;
         if (!Loc_u32TimeOut)
