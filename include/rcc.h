@@ -54,7 +54,7 @@ typedef enum
 
 } Prescaler_t;
 
-typedef enum{
+typedef enum{ //BUS CODE
     AHB1_BUS=0UL << 5,
     AHB2_BUS=1UL << 5,
     APB1_BUS=2UL << 5,
@@ -62,7 +62,7 @@ typedef enum{
 
 }Peripheral_Bus_t;
 
-typedef enum
+typedef enum //peripherals with their bus code
 {
     // AHB1 peripheral clock enable register
     Peripheral_GPIOA = (AHB1_BUS |0),
@@ -107,8 +107,13 @@ typedef enum
 
 } Peripheral_t;
 
+typedef enum{
+    Peripheral_Enable,
+    Peripheral_Disable
+}Peripheral_State_t;
+
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus);
 RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType);
 RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler);
-RCC_Error_Status_t RCC_enuEnablePeripheral(Peripheral_t Copy_enuPeripheral);
+RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral,Peripheral_State_t Copy_enuPeripheralState);
 #endif

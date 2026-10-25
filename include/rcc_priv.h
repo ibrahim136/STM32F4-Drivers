@@ -88,6 +88,9 @@ typedef struct
 #define RCC_CFGR_MCO2PRE_MASK (0x07UL << RCC_CFGR_MCO2PRE)
 #define RCC_CFGR_MCO2_MASK (0x03UL << RCC_CFGR_MCO2)
 
+//BUS_CODE_MASK
+#define BUS_CODE_MASK (0x03UL << 5)
+#define BUS_CODE_POS (5)
 
 
 #endif

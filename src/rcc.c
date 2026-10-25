@@ -164,7 +164,45 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     return Loc_enuRCC_Error_Status;
 }
 
-RCC_Error_Status_t RCC_enuEnablePeripheral(Peripheral_t Copy_enuPeripheral)
+RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Peripheral_State_t Copy_enuPeripheralState)
 {
-    
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    Peripheral_Bus_t Loc_enuBUSCODE = Get_Mask(Copy_enuPeripheral, BUS_CODE_MASK, BUS_CODE_POS);
+    u32 Loc_u32Targetreg;
+    switch (Loc_enuBUSCODE)
+    {
+    case AHB1_BUS:
+        Loc_u32Targetreg = RCC_reg->RCC_AHB1ENR;
+        break;
+    case AHB2_BUS:
+        Loc_u32Targetreg = RCC_reg->RCC_AHB2ENR;
+        break;
+    case APB1_BUS:
+        Loc_u32Targetreg = RCC_reg->RCC_APB1ENR;
+        break;
+    case APB2_BUS:
+        Loc_u32Targetreg = RCC_reg->RCC_APB2ENR;
+        break;
+    default:
+        Loc_enuRCC_Error_Status = RCC_InvalidParam;
+        break;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        Clear_Bit(Copy_enuPeripheral, BUS_CODE_MASK);
+        switch (Copy_enuPeripheralState)
+        {
+        case Peripheral_Enable:
+            Set_Bit(Loc_u32Targetreg, Copy_enuPeripheral);
+            break;
+
+        case Peripheral_Disable:
+            Clear_Bit(Loc_u32Targetreg, Copy_enuPeripheral);
+            break;
+        default:
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+            break;
+        }
+    }
+    return Loc_enuRCC_Error_Status;
 }
