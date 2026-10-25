@@ -9,6 +9,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
     u8 Loc_u8targetbit;
     u8 Loc_u8readytbit;
     u8 Loc_u8check;
+    u8 Loc_u8PLLReconfigFlag = 0;
     switch (Copy_enuCLKType)
     {
     case HSI:
@@ -36,6 +37,30 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             Loc_u8check = 1;
             break;
         case CLK_Disable:
+            if (Loc_u8targetbit != RCC_CR_PLLON)
+            {
+                u8 Loc_u8PLLSRCBIT = Get_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
+                if (!Loc_u8PLLSRCBIT == (Loc_u8targetbit == RCC_CR_HSION))
+                {
+                    Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Disable);
+                    if (Loc_enuRCC_Error_Status == RCC_OK)
+                    {
+                        Loc_u8PLLReconfigFlag = 1;
+                        Set_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
+                        Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Enable);
+                    }
+                }
+                else if (Loc_u8PLLSRCBIT == !(Loc_u8targetbit == RCC_CR_HSEON))
+                {
+                    Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Disable);
+                    if (Loc_enuRCC_Error_Status == RCC_OK)
+                    {
+                        Loc_u8PLLReconfigFlag = 1;
+                        Clear_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
+                        Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Enable);
+                    }
+                }
+            }
             Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
             Loc_u8check = 0;
             break;
@@ -207,22 +232,6 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
 
 RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
 {
-    u8 Loc_u8PLLToggleFlag=0;
-    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
-    if (RCC_enuGetSysCLK() == PLL)
-    {
-        Loc_u8PLLToggleFlag =1;
-        Loc_enuRCC_Error_Status= RCC_enuSelectSysCLK(HSI);
-    }
-    if (Loc_enuRCC_Error_Status == RCC_OK)
-    {
-        
-    }
-    if (Loc_u8PLLToggleFlag)
-    {
-        Loc_enuRCC_Error_Status= RCC_enuSelectSysCLK(PLL);
-    }
-    return Loc_enuRCC_Error_Status;
 }
 
 CLK_Type_t RCC_enuGetSysCLK()
