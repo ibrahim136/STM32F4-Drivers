@@ -7,6 +7,6 @@
 #define Get_bit(reg, bit_no) ((reg >> bit_no) & 1UL)
 #define Clear_Mask(reg, bit_mask) (reg &= ~(bit_mask))
 #define Set_Mask(reg, bit_mask) (reg |= (bit_mask))
-#define Get_Mask(reg,bit_mask,pos) ( (reg & bit_mask) >> pos)
+#define Get_Mask(reg,bit_mask) ( (reg & bit_mask) )
 
 #endif
