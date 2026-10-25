@@ -167,7 +167,7 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     Peripheral_Bus_t Loc_enuBUSCODE = Get_Mask(Copy_enuPeripheral, BUS_CODE_MASK);
-    volatile u32 * Loc_u32Targetreg;
+    volatile u32 *Loc_u32Targetreg;
     switch (Loc_enuBUSCODE)
     {
     case AHB1_BUS:
