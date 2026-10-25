@@ -18,7 +18,8 @@ typedef enum
 {
     HSI,
     HSE,
-    PLL
+    PLL,
+    Not_applicable
 } CLK_Type_t;
 
 typedef enum
@@ -114,8 +115,20 @@ typedef enum
     Peripheral_Disable
 } Peripheral_State_t;
 
+typedef struct
+{
+    u8 M;
+    u16 N;
+    u8 P;
+    u8 SRC;
+    u8 Q;
+
+} PLL_Config_t;
+
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus);
 RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType);
 RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler);
 RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Peripheral_State_t Copy_enuPeripheralState);
+RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig);
+CLK_Type_t RCC_enuGetSysCLK();
 #endif

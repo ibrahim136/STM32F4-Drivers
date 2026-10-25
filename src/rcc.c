@@ -204,3 +204,46 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
     }
     return Loc_enuRCC_Error_Status;
 }
+
+RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
+{
+    u8 Loc_u8PLLToggleFlag=0;
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    if (RCC_enuGetSysCLK() == PLL)
+    {
+        Loc_u8PLLToggleFlag =1;
+        Loc_enuRCC_Error_Status= RCC_enuSelectSysCLK(HSI);
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        
+    }
+    if (Loc_u8PLLToggleFlag)
+    {
+        Loc_enuRCC_Error_Status= RCC_enuSelectSysCLK(PLL);
+    }
+    return Loc_enuRCC_Error_Status;
+}
+
+CLK_Type_t RCC_enuGetSysCLK()
+{
+    u8 Loc_u8RCC_CFGR_SWS = Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_SWS_MASK);
+    Loc_u8RCC_CFGR_SWS = Get_Mask_Value(Loc_u8RCC_CFGR_SWS, RCC_CFGR_SWS);
+    CLK_Type_t Loc_enuCLKType;
+    switch (Loc_u8RCC_CFGR_SWS)
+    {
+    case 0x00UL:
+        Loc_enuCLKType = HSI;
+        break;
+    case 0x01UL:
+        Loc_enuCLKType = HSE;
+        break;
+    case 0x02UL:
+        Loc_enuCLKType = PLL;
+        break;
+    default:
+        Loc_enuCLKType = Not_applicable;
+        break;
+    }
+    return Loc_enuCLKType;
+}
