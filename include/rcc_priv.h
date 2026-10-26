@@ -42,6 +42,8 @@ typedef struct
 
 #define RCC_reg ((volatile RCC_reg_t *)RCC_BASE)
 
+#define MHZ_to_HZ 1000000UL
+
 // RCC_CR register
 
 // bit numbers
@@ -125,5 +127,21 @@ typedef struct
 #define RCC_PLLCFGR_PLLN_MASK (0x1FFUL << RCC_PLLCFGR_PLLN)
 #define RCC_PLLCFGR_PLLP_MASK (0x8UL << RCC_PLLCFGR_PLLP)
 #define RCC_PLLCFGR_PLLQ_MASK (0xFUL << RCC_PLLCFGR_PLLQ)
+
+// RCC_CSR register
+
+// bit numbers
+#define RCC_CSR_LSION 0
+#define RCC_CSR_LSIRDY 1
+#define RCC_CSR_RMVF 24
+#define RCC_CSR_ResetCauseStartBit 25
+#define RCC_CSR_BORRSTF 25
+#define RCC_CSR_PINRSTF 26
+#define RCC_CSR_PORRSTF 27
+#define RCC_CSR_SFTRSTF 28
+#define RCC_CSR_IWDGRSTF 29
+#define RCC_CSR_WWDGRSTF 30
+#define RCC_CSR_LPWRRSTF 31
+#define RCC_CSR_ResetCauseEndBit 31
 
 #endif

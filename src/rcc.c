@@ -18,7 +18,7 @@ inline CLK_Type_t RCC_enuGetPLLSRCCLK()
     return Loc_enuPLLSRCCLKType;
 }
 
-inline CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType)
+CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType)
 {
     CLK_Status_t CLKState = CLK_Enable;
     u8 check_bit;
@@ -306,13 +306,11 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
 inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u8CLKFreq)
 {
     u8 is_valid;
-    float VCO_input = (float)((float)Copy_u8CLKFreq / (float)Copy_strPLLConfig->M);
-    float VCO_output = (float)(VCO_input * (float)(Copy_strPLLConfig->N));
     if (Copy_strPLLConfig->M > M_MAX || Copy_strPLLConfig->M < M_MIN)
     {
         is_valid = 0;
     }
-    else if (Copy_u8CLKFreq > VIN_MAX || VCO_input < VIN_MIN)
+    else if (Copy_u8CLKFreq > VIN_MAX * Copy_strPLLConfig->M || Copy_u8CLKFreq < VIN_MIN * Copy_strPLLConfig->M)
     {
         is_valid = 0;
     }
@@ -324,11 +322,12 @@ inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u
     {
         is_valid = 0;
     }
-    else if (VCO_output > VOUT_MAX || VCO_output < VOUT_MIN)
+    else if (Copy_u8CLKFreq * Copy_strPLLConfig->N > VOUT_MAX * Copy_strPLLConfig->M ||
+             Copy_u8CLKFreq * Copy_strPLLConfig->N < VOUT_MIN * Copy_strPLLConfig->M)
     {
         is_valid = 0;
     }
-    else if (VCO_output != USBOTG_Freq * Copy_strPLLConfig->Q)
+    else if (Copy_u8CLKFreq * Copy_strPLLConfig->N / Copy_strPLLConfig->M != USBOTG_Freq * Copy_strPLLConfig->Q)
     {
         is_valid = 0;
     }
@@ -336,7 +335,7 @@ inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u
     {
         is_valid = 0;
     }
-    else if (VCO_output / Copy_strPLLConfig->P > MAX_SYSCLKFreq)
+    else if (Copy_u8CLKFreq * Copy_strPLLConfig->N / Copy_strPLLConfig->M / Copy_strPLLConfig->P > MAX_SYSCLKFreq)
     {
         is_valid = 0;
     }
@@ -383,11 +382,11 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
     {
         u32 Loc_RCC_PLLCFGR = RCC_reg->RCC_PLLCFGR;
 
-        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLM_MASK);
-        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLN_MASK);
-        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLP_MASK);
-        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLQ_MASK);
-        Clear_Bit(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLSRC);
+        Clear_Mask(Loc_RCC_PLLCFGR, RCC_PLLCFGR_PLLM_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR, RCC_PLLCFGR_PLLN_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR, RCC_PLLCFGR_PLLP_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR, RCC_PLLCFGR_PLLQ_MASK);
+        Clear_Bit(Loc_RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
 
         Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->M, RCC_PLLCFGR_PLLM);
         Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->N, RCC_PLLCFGR_PLLN);
@@ -420,4 +419,61 @@ CLK_Type_t RCC_enuGetSysCLK()
         break;
     }
     return Loc_enuCLKType;
+}
+
+inline u32 RCC_u32GetPLLSysFreq()
+{
+    u32 freq;
+    u32 Loc_u32PLLCFGR = RCC_reg->RCC_PLLCFGR;
+    u16 M = Get_Mask_Value(Get_Mask(Loc_u32PLLCFGR, RCC_PLLCFGR_PLLM_MASK), RCC_PLLCFGR_PLLM);
+    u16 N = Get_Mask_Value(Get_Mask(Loc_u32PLLCFGR, RCC_PLLCFGR_PLLN_MASK), RCC_PLLCFGR_PLLN);
+    u16 P = Get_Mask_Value(Get_Mask(Loc_u32PLLCFGR, RCC_PLLCFGR_PLLP_MASK), RCC_PLLCFGR_PLLP);
+    P = (P + 1) * 2;
+    u16 src = Get_bit(Loc_u32PLLCFGR, RCC_PLLCFGR_PLLSRC);
+    if (src)
+    {
+        freq = blackpill_f401cc_STM32F401CC_HSE_Freq * MHZ_to_HZ;
+    }
+    else
+    {
+        freq = blackpill_f401cc_STM32F401CC_HSI_Freq * MHZ_to_HZ;
+    }
+    freq = ((freq / M) * N) / P;
+    return freq;
+}
+
+u32 RCC_u32GetSysCLKFreq()
+{
+    CLK_Type_t Loc_enuSysCLKType = RCC_enuGetSysCLK();
+    u32 freq;
+    switch (Loc_enuSysCLKType)
+    {
+    case HSI:
+        freq = blackpill_f401cc_STM32F401CC_HSI_Freq * MHZ_to_HZ;
+        break;
+    case HSE:
+        freq = blackpill_f401cc_STM32F401CC_HSE_Freq * MHZ_to_HZ;
+        break;
+
+    default:
+        freq = RCC_u32GetPLLSysFreq();
+        break;
+    }
+    return freq;
+}
+
+RCC_ResetCause_t RCC_enuGetResetCause()
+{
+    RCC_ResetCause_t Loc_enuResetCause=0;
+    u8 Loc_u8BitPosition = RCC_CSR_ResetCauseStartBit;
+    u32 Loc_u32RCC_CSR = RCC_reg->RCC_CSR;
+    while (Loc_u8BitPosition <= RCC_CSR_ResetCauseEndBit)
+    {
+        u8 Loc_u8TempFlag =Get_bit(Loc_u32RCC_CSR,Loc_u8BitPosition);
+        if (Loc_u8TempFlag)
+        {
+            Loc_enuResetCause = Loc_u8TempFlag;
+        }
+    }
+    return Loc_enuResetCause;
 }

@@ -131,10 +131,34 @@ typedef struct
 
 } PLL_Config_t;
 
+typedef enum
+{
+    RCC_Reset_Cause_UNKNOWN = 0,
+    RCC_Reset_Cause_BORRSTF=25,
+    RCC_Reset_Cause_PINRSTF = 26,
+    RCC_Reset_Cause_PORRSTF = 27,
+    RCC_Reset_Cause_SFTRSTF = 28,
+    RCC_Reset_Cause_IWDGRSTF = 29,
+    RCC_Reset_Cause_WWDGRSTF = 30,
+    RCC_Reset_Cause_LPWRRSTF = 31
+} RCC_ResetCause_t;
+
+//2
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus);
+//1
 RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType);
+//4
 RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler);
+//5
 RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Peripheral_State_t Copy_enuPeripheralState);
+//3
 RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig);
+//9
 CLK_Type_t RCC_enuGetSysCLK();
+//6
+u32 RCC_u32GetSysCLKFreq();
+//7
+RCC_ResetCause_t GetRCC_enuResetCause();
+//8
+CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType);
 #endif
