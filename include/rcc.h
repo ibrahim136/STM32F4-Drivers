@@ -12,7 +12,8 @@ typedef enum
 typedef enum
 {
     CLK_Enable,
-    CLK_Disable
+    CLK_Disable,
+    UNDEFINED
 } CLK_Status_t;
 
 typedef enum
