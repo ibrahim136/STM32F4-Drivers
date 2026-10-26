@@ -312,7 +312,7 @@ inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u
     {
         is_valid = 0;
     }
-    else if (VCO_input > VIN_MAX || VCO_input < VIN_MIN)
+    else if (Copy_u8CLKFreq > VIN_MAX || VCO_input < VIN_MIN)
     {
         is_valid = 0;
     }
@@ -332,6 +332,10 @@ inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u
     {
         is_valid = 0;
     }
+    else if (Copy_strPLLConfig->P > P_MAX || Copy_strPLLConfig->P < P_MIN || Copy_strPLLConfig->P % 2 != 0)
+    {
+        is_valid = 0;
+    }
     else if (VCO_output / Copy_strPLLConfig->P > MAX_SYSCLKFreq)
     {
         is_valid = 0;
@@ -345,13 +349,18 @@ inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u
 
 RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
 {
+
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u8 Copy_u8CLKFreq;
-    if (RCC_enuGetCLKStatus(PLL) == CLK_Enable)
+    if (Copy_strPLLConfig == nullptr) // check null
+    {
+        Loc_enuRCC_Error_Status = RCC_InvalidParam;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK && RCC_enuGetCLKStatus(PLL) == CLK_Enable) // check PLLDisable
     {
         Loc_enuRCC_Error_Status = RCC_PLLEnabled;
     }
-    if (Loc_enuRCC_Error_Status == RCC_OK)
+    if (Loc_enuRCC_Error_Status == RCC_OK) // validating Divisiors
     {
         switch (Copy_strPLLConfig->SRC)
         {
@@ -362,22 +371,29 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
             Copy_u8CLKFreq = blackpill_f401cc_STM32F401CC_HSE_Freq;
             break;
         default:
-        Loc_enuRCC_Error_Status = RCC_InvalidPLLDivisiors;
+            Loc_enuRCC_Error_Status = RCC_InvalidPLLDivisiors;
             break;
         }
-        if (!RCC_PLLDivisionFactorsCheck(Copy_strPLLConfig,Copy_u8CLKFreq))
+        if (Loc_enuRCC_Error_Status == RCC_OK && !RCC_PLLDivisionFactorsCheck(Copy_strPLLConfig, Copy_u8CLKFreq))
         {
             Loc_enuRCC_Error_Status = RCC_InvalidPLLDivisiors;
         }
     }
-    if (Loc_enuRCC_Error_Status == RCC_OK)
+    if (Loc_enuRCC_Error_Status == RCC_OK) // writing to PLLCFGR reg
     {
-        u32 Loc_RCC_PLLCFGR = 0x00UL;
-        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->M,RCC_PLLCFGR_PLLM);
-        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->N,RCC_PLLCFGR_PLLN);
-        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->Q,RCC_PLLCFGR_PLLQ);
-        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->P,RCC_PLLCFGR_PLLP);
-        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->SRC,RCC_PLLCFGR_PLLSRC);
+        u32 Loc_RCC_PLLCFGR = RCC_reg->RCC_PLLCFGR;
+
+        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLM_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLN_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLP_MASK);
+        Clear_Mask(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLQ_MASK);
+        Clear_Bit(Loc_RCC_PLLCFGR,RCC_PLLCFGR_PLLSRC);
+
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->M, RCC_PLLCFGR_PLLM);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->N, RCC_PLLCFGR_PLLN);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->Q, RCC_PLLCFGR_PLLQ);
+        Loc_RCC_PLLCFGR |= Masking_Value(((Copy_strPLLConfig->P / 2) - 1), RCC_PLLCFGR_PLLP);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->SRC, RCC_PLLCFGR_PLLSRC);
         RCC_reg->RCC_PLLCFGR = Loc_RCC_PLLCFGR;
     }
     return Loc_enuRCC_Error_Status;

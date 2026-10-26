@@ -104,11 +104,13 @@ typedef struct
 #define RCC_PLLCFGR_PLLSRC_HSI 0
 #define RCC_PLLCFGR_PLLSRC_HSE 1
 
-//PLL Division Factors Ranges
+// PLL Division Factors Ranges
 #define M_MIN 2
 #define M_MAX 63
 #define N_MIN 192
 #define N_MAX 432
+#define P_MIN 2
+#define P_MAX 8
 #define VIN_MIN 1
 #define VIN_MAX 2
 #define VOUT_MIN 192
