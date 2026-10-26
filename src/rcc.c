@@ -17,8 +17,9 @@ inline CLK_Type_t RCC_enuGetPLLSRCCLK()
     return Loc_enuPLLSRCCLKType;
 }
 
-inline CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType){
-    CLK_Status_t CLKState;
+inline CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType)
+{
+    CLK_Status_t CLKState = CLK_Enable;
     u8 check_bit;
     switch (Copy_enuCLKType)
     {
@@ -26,22 +27,20 @@ inline CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType){
         check_bit = RCC_CR_HSION;
         break;
     case HSE:
-        check_bit = RCC_CR_HSION;
+        check_bit = RCC_CR_HSEON;
         break;
     case PLL:
         check_bit = RCC_CR_PLLON;
         break;
     default:
-        
+        CLKState = UNDEFINED;
         break;
     }
-    if (Get_bit(RCC_reg->RCC_CR,RCC_CR_HSEON))
-        {
-            CLKState = CLK_Enable;
-        }
-        else{
-            CLKState = CLK_Disable;
-        }
+    if (CLKState != UNDEFINED && !(Get_bit(RCC_reg->RCC_CR, check_bit)))
+    {
+        CLKState = CLK_Disable;
+    }
+    return CLKState;
 }
 
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus)
@@ -84,7 +83,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             {
                 CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
                 CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
-                if ( (Loc_enuPLLSRCCLK == HSI && Get_bit(RCC_reg->RCC_CR,RCC_CR_PLLON ) )|| Loc_enuSysCLK == HSI)
+                if ((Loc_enuPLLSRCCLK == HSI && Get_bit(RCC_reg->RCC_CR, RCC_CR_PLLON)) || Loc_enuSysCLK == HSI)
                 {
                     Loc_enuRCC_Error_Status = RCC_ClockInUse;
                     break;
@@ -97,7 +96,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             {
                 CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
                 CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
-                if ( (Loc_enuPLLSRCCLK == HSE && Get_bit(RCC_reg->RCC_CR,RCC_CR_PLLON ) ) || Loc_enuSysCLK == HSE)
+                if ((Loc_enuPLLSRCCLK == HSE && Get_bit(RCC_reg->RCC_CR, RCC_CR_PLLON)) || Loc_enuSysCLK == HSE)
                 {
                     Loc_enuRCC_Error_Status = RCC_ClockInUse;
                     break;
@@ -140,20 +139,31 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u32 Loc_u32TimeOut = TIMEOUT;
     u8 Loc_u8targetSWValue;
-    switch (Copy_enuCLKType)
+    CLK_Status_t Loc_enuCLKState = RCC_enuGetCLKStatus(Copy_enuCLKType);
+    if (Loc_enuCLKState != CLK_Enable)
     {
-    case HSI:
-        Loc_u8targetSWValue = HSI;
-        break;
-    case HSE:
-        Loc_u8targetSWValue = HSE;
-        break;
-    case PLL:
-        Loc_u8targetSWValue = PLL;
-        break;
-    default:
-        Loc_enuRCC_Error_Status = RCC_InvalidParam;
-        break;
+        Loc_enuRCC_Error_Status = RCC_CLKDisabled;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        switch (Copy_enuCLKType)
+        {
+        case HSI:
+        {
+            Loc_u8targetSWValue = HSI;
+            break;
+        }
+        case HSE:
+
+            Loc_u8targetSWValue = HSE;
+            break;
+        case PLL:
+            Loc_u8targetSWValue = PLL;
+            break;
+        default:
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+            break;
+        }
     }
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
