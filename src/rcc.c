@@ -117,6 +117,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
                 break;
             }
             default:
+            {
                 CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
                 if (Loc_enuSysCLK == PLL)
                 {
@@ -126,6 +127,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
                 Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
                 Loc_u8check = 0;
                 break;
+            }
             }
         default:
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
