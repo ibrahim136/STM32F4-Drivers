@@ -3,12 +3,11 @@
 #include "Bit_math.h"
 #include "STD_types.h"
 
-GPIO_reg_t *GPIOS[6] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOH};
+static volatile GPIO_reg_t *GPIOS[6] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOH};
 
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t COPY_enuPIN, GPIO_PIN_State_t Copy_enuState)
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
-    u32 Loc_u32TimeOut = TIMEOUT;
     switch (Copy_enuPORT)
     {
     case GPIO_PORTA ... GPIO_Count - 1:
