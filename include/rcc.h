@@ -7,7 +7,10 @@ typedef enum
     RCC_Timeout,
     RCC_InvalidParam,
     RCC_ClockInUse,
-    RCC_CLKDisabled
+    RCC_CLKDisabled,
+    RCC_PLLEnabled,
+    RCC_InvalidPLLDivisiors,
+    RCC_PLLSRCDisabled
 } RCC_Error_Status_t;
 
 typedef enum

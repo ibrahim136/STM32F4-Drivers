@@ -104,6 +104,20 @@ typedef struct
 #define RCC_PLLCFGR_PLLSRC_HSI 0
 #define RCC_PLLCFGR_PLLSRC_HSE 1
 
+//PLL Division Factors Ranges
+#define M_MIN 2
+#define M_MAX 63
+#define N_MIN 192
+#define N_MAX 432
+#define VIN_MIN 1
+#define VIN_MAX 2
+#define VOUT_MIN 192
+#define VOUT_MAX 432
+#define Q_MIN 2
+#define Q_MAX 15
+#define USBOTG_Freq 48
+#define MAX_SYSCLKFreq 84
+
 // bit masking
 #define RCC_PLLCFGR_PLLM_MASK (0x3FUL << RCC_PLLCFGR_PLLM)
 #define RCC_PLLCFGR_PLLN_MASK (0x1FFUL << RCC_PLLCFGR_PLLN)

@@ -1,4 +1,5 @@
 #include "rcc.h"
+#include "rcc_cfg.h"
 #include "rcc_priv.h"
 #include "Bit_math.h"
 
@@ -73,6 +74,16 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
         switch (Copy_enuCLKStatus)
         {
         case CLK_Enable:
+            if (Loc_u8targetbit == RCC_CR_PLLON)
+            {
+                CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
+                CLK_Status_t Loc_enuPLLSRCCLKState = RCC_enuGetCLKStatus(Loc_enuPLLSRCCLK);
+                if (Loc_enuPLLSRCCLKState != CLK_Enable)
+                {
+                    Loc_enuRCC_Error_Status = RCC_PLLSRCDisabled;
+                    break;
+                }
+            }
             Set_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
             Loc_u8check = 1;
             break;
@@ -292,8 +303,79 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
     return Loc_enuRCC_Error_Status;
 }
 
+inline u8 RCC_PLLDivisionFactorsCheck(PLL_Config_t *Copy_strPLLConfig, u8 Copy_u8CLKFreq)
+{
+    u8 is_valid;
+    float VCO_input = (float)((float)Copy_u8CLKFreq / (float)Copy_strPLLConfig->M);
+    float VCO_output = (float)(VCO_input * (float)(Copy_strPLLConfig->N));
+    if (Copy_strPLLConfig->M > M_MAX || Copy_strPLLConfig->M < M_MIN)
+    {
+        is_valid = 0;
+    }
+    else if (VCO_input > VIN_MAX || VCO_input < VIN_MIN)
+    {
+        is_valid = 0;
+    }
+    else if (Copy_strPLLConfig->N > N_MAX || Copy_strPLLConfig->N < N_MIN)
+    {
+        is_valid = 0;
+    }
+    else if (Copy_strPLLConfig->Q > Q_MAX || Copy_strPLLConfig->Q < Q_MIN)
+    {
+        is_valid = 0;
+    }
+    else if (VCO_output > VOUT_MAX || VCO_output < VOUT_MIN)
+    {
+        is_valid = 0;
+    }
+    else if (VCO_output != USBOTG_Freq * Copy_strPLLConfig->Q)
+    {
+        is_valid = 0;
+    }
+    else if (VCO_output / Copy_strPLLConfig->P > MAX_SYSCLKFreq)
+    {
+        is_valid = 0;
+    }
+    else
+    {
+        is_valid = 1;
+    }
+    return is_valid;
+}
+
 RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
 {
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    u8 Copy_u8CLKFreq;
+    if (RCC_enuGetCLKStatus(PLL) == CLK_Enable)
+    {
+        Loc_enuRCC_Error_Status = RCC_PLLEnabled;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        switch (Copy_strPLLConfig->SRC)
+        {
+        case RCC_PLLCFGR_PLLSRC_HSI:
+            Copy_u8CLKFreq = blackpill_f401cc_STM32F401CC_HSI_Freq;
+            break;
+        case RCC_PLLCFGR_PLLSRC_HSE:
+            Copy_u8CLKFreq = blackpill_f401cc_STM32F401CC_HSE_Freq;
+            break;
+        default:
+        Loc_enuRCC_Error_Status = RCC_InvalidPLLDivisiors;
+            break;
+        }
+        if (!RCC_PLLDivisionFactorsCheck(Copy_strPLLConfig,Copy_u8CLKFreq))
+        {
+            Loc_enuRCC_Error_Status = RCC_InvalidPLLDivisiors;
+        }
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        u32 Loc_RCC_PLLCFGR = 0x00UL;
+        
+    }
+    return Loc_enuRCC_Error_Status;
 }
 
 CLK_Type_t RCC_enuGetSysCLK()
