@@ -1,7 +1,9 @@
-#ifndef GPIO_H
-#define GPIO_H
+#ifndef GPIO_Priv_H
+#define GPIO_Priv_H
 
 #include "STD_types.h"
+
+#define TIMEOUT 100000
 
 #define GPIOA_BASE ((volatile u32 *)(0x40020000UL))
 #define GPIOB_BASE ((volatile u32 *)(0x40020400UL))
@@ -25,11 +27,17 @@ typedef struct
 
 } GPIO_reg_t;
 
+//PORTS BASE Addresses 
+
 #define GPIOA ((volatile GPIO_reg_t *)GPIOA_BASE)
 #define GPIOB ((volatile GPIO_reg_t *)GPIOB_BASE)
 #define GPIOC ((volatile GPIO_reg_t *)GPIOC_BASE)
 #define GPIOD ((volatile GPIO_reg_t *)GPIOD_BASE)
 #define GPIOE ((volatile GPIO_reg_t *)GPIOE_BASE)
 #define GPIOH ((volatile GPIO_reg_t *)GPIOH_BASE)
+
+#define BR(bit) (bit+16)
+#define BS(bit) (bit+0)
+
 
 #endif
