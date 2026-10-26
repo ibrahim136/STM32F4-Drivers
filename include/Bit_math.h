@@ -9,5 +9,6 @@
 #define Set_Mask(reg, bit_mask) (reg |= (bit_mask))
 #define Get_Mask(reg, bit_mask) ((reg & bit_mask))
 #define Get_Mask_Value(reg,bit_pos) (reg>>bit_pos)
+#define Masking_Value(value,pos) (value<<pos)
 
 #endif

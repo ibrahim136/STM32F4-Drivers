@@ -373,7 +373,12 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
         u32 Loc_RCC_PLLCFGR = 0x00UL;
-        
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->M,RCC_PLLCFGR_PLLM);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->N,RCC_PLLCFGR_PLLN);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->Q,RCC_PLLCFGR_PLLQ);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->P,RCC_PLLCFGR_PLLP);
+        Loc_RCC_PLLCFGR |= Masking_Value(Copy_strPLLConfig->SRC,RCC_PLLCFGR_PLLSRC);
+        RCC_reg->RCC_PLLCFGR = Loc_RCC_PLLCFGR;
     }
     return Loc_enuRCC_Error_Status;
 }
