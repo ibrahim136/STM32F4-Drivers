@@ -47,5 +47,7 @@ typedef enum
 } GPIO_PIN_State_t;
 
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t COPY_enuPIN, GPIO_PIN_State_t Copy_enuState);
+GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t COPY_enuPIN, GPIO_PIN_State_t* Ref_enuState);
+
 
 #endif
