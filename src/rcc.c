@@ -464,16 +464,19 @@ u32 RCC_u32GetSysCLKFreq()
 
 RCC_ResetCause_t RCC_enuGetResetCause()
 {
-    RCC_ResetCause_t Loc_enuResetCause=0;
+    RCC_ResetCause_t Loc_enuResetCause = RCC_Reset_Cause_UNKNOWN;
     u8 Loc_u8BitPosition = RCC_CSR_ResetCauseStartBit;
     u32 Loc_u32RCC_CSR = RCC_reg->RCC_CSR;
     while (Loc_u8BitPosition <= RCC_CSR_ResetCauseEndBit)
     {
-        u8 Loc_u8TempFlag =Get_bit(Loc_u32RCC_CSR,Loc_u8BitPosition);
+        u8 Loc_u8TempFlag = Get_bit(Loc_u32RCC_CSR, Loc_u8BitPosition);
         if (Loc_u8TempFlag)
         {
-            Loc_enuResetCause = Loc_u8TempFlag;
+            Loc_enuResetCause = (RCC_ResetCause_t)Loc_u8BitPosition;
+            break;
         }
+        Loc_u8BitPosition++;
     }
+    Set_Bit(RCC_reg->RCC_CSR, RCC_CSR_RMVF);
     return Loc_enuResetCause;
 }
