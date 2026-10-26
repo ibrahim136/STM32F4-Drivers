@@ -2,6 +2,48 @@
 #include "rcc_priv.h"
 #include "Bit_math.h"
 
+inline CLK_Type_t RCC_enuGetPLLSRCCLK()
+{
+    u8 Loc_u8PLLSRC = Get_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
+    CLK_Type_t Loc_enuPLLSRCCLKType;
+    if (Loc_u8PLLSRC)
+    {
+        Loc_enuPLLSRCCLKType = HSE;
+    }
+    else
+    {
+        Loc_enuPLLSRCCLKType = HSI;
+    }
+    return Loc_enuPLLSRCCLKType;
+}
+
+inline CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType){
+    CLK_Status_t CLKState;
+    u8 check_bit;
+    switch (Copy_enuCLKType)
+    {
+    case HSI:
+        check_bit = RCC_CR_HSION;
+        break;
+    case HSE:
+        check_bit = RCC_CR_HSION;
+        break;
+    case PLL:
+        check_bit = RCC_CR_PLLON;
+        break;
+    default:
+        
+        break;
+    }
+    if (Get_bit(RCC_reg->RCC_CR,RCC_CR_HSEON))
+        {
+            CLKState = CLK_Enable;
+        }
+        else{
+            CLKState = CLK_Disable;
+        }
+}
+
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
@@ -9,7 +51,6 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
     u8 Loc_u8targetbit;
     u8 Loc_u8readytbit;
     u8 Loc_u8check;
-    u8 Loc_u8PLLReconfigFlag = 0;
     switch (Copy_enuCLKType)
     {
     case HSI:
@@ -37,33 +78,45 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             Loc_u8check = 1;
             break;
         case CLK_Disable:
-            if (Loc_u8targetbit != RCC_CR_PLLON)
+            switch (Loc_u8targetbit)
             {
-                u8 Loc_u8PLLSRCBIT = Get_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
-                if (!Loc_u8PLLSRCBIT == (Loc_u8targetbit == RCC_CR_HSION))
+            case RCC_CR_HSION:
+            {
+                CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
+                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                if ( (Loc_enuPLLSRCCLK == HSI && Get_bit(RCC_reg->RCC_CR,RCC_CR_PLLON ) )|| Loc_enuSysCLK == HSI)
                 {
-                    Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Disable);
-                    if (Loc_enuRCC_Error_Status == RCC_OK)
-                    {
-                        Loc_u8PLLReconfigFlag = 1;
-                        Set_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
-                        Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Enable);
-                    }
+                    Loc_enuRCC_Error_Status = RCC_ClockInUse;
+                    break;
                 }
-                else if (Loc_u8PLLSRCBIT == !(Loc_u8targetbit == RCC_CR_HSEON))
-                {
-                    Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Disable);
-                    if (Loc_enuRCC_Error_Status == RCC_OK)
-                    {
-                        Loc_u8PLLReconfigFlag = 1;
-                        Clear_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
-                        Loc_enuRCC_Error_Status = RCC_enuCLKControl(PLL, CLK_Enable);
-                    }
-                }
+                Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
+                Loc_u8check = 0;
+                break;
             }
-            Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
-            Loc_u8check = 0;
-            break;
+            case RCC_CR_HSEON:
+            {
+                CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
+                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                if ( (Loc_enuPLLSRCCLK == HSE && Get_bit(RCC_reg->RCC_CR,RCC_CR_PLLON ) ) || Loc_enuSysCLK == HSE)
+                {
+                    Loc_enuRCC_Error_Status = RCC_ClockInUse;
+                    break;
+                }
+                Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
+                Loc_u8check = 0;
+                break;
+            }
+            default:
+                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                if (Loc_enuSysCLK == PLL)
+                {
+                    Loc_enuRCC_Error_Status = RCC_ClockInUse;
+                    break;
+                }
+                Clear_Bit(RCC_reg->RCC_CR, Loc_u8targetbit);
+                Loc_u8check = 0;
+                break;
+            }
         default:
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
             break;
@@ -160,7 +213,6 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     }
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
-        Loc_u8TargetToSetMask |= Copy_enuPrescaler;
         switch (Copy_enuBus)
         {
         case AHB:

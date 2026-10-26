@@ -6,7 +6,7 @@ typedef enum
     RCC_OK,
     RCC_Timeout,
     RCC_InvalidParam,
-    RCC_OK_ReConfigurePLL
+    RCC_ClockInUse
 } RCC_Error_Status_t;
 
 typedef enum
