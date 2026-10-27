@@ -286,8 +286,8 @@ GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO
             Set_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(Copy_enuPINAF, Quad_pos(Copy_enuPIN)));
             break;
         case PIN8 ... PIN15:
-            Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(GPIO_AF_MASK, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
-            Set_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(Copy_enuPINAF, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
+            Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRH, Masking_Value(GPIO_AF_MASK, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
+            Set_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRH, Masking_Value(Copy_enuPINAF, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
             break;
         default:
             break;
