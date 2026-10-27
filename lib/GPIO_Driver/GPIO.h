@@ -46,8 +46,42 @@ typedef enum
     PIN_HIGH
 } GPIO_PIN_State_t;
 
-GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t COPY_enuPIN, GPIO_PIN_State_t Copy_enuState);
-GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t COPY_enuPIN, GPIO_PIN_State_t* Ref_enuState);
+typedef enum{
+    Low_Speed,
+    Medium_Speed,
+    High_Speed,
+    Very_High_Speed,
+    Speed_Count
+}GPIO_PIN_Speed_t;
 
+typedef enum{
+    No_pull_up_pull_down,
+    Pull_up,
+    Pull_down,
+    PUPD_Count
+}GPIO_PIN_PUPD_t;
+
+typedef enum{
+    Mode_Input,
+    Mode_General_Purpose_Output,
+    Mode_Alternate_Function,
+    Mode_Analog,
+    Mode_Count
+}GPIO_PIN_Moder_t;
+
+typedef enum{
+    Push_Pull,
+    Open_Drain,
+    Type_Count
+}GPIO_PIN_Output_Type_t;
+
+GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState);
+GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t* Ref_enuState);
+GPIO_Error_Status_t GPIO_enuPORTWrite(GPIO_Port_t Copy_enuPORT, u16 Copy_u16PORTState);
+GPIO_Error_Status_t GPIO_enuPORTRead(GPIO_Port_t Copy_enuPORT, u16 * Copy_u16PORTState);
+GPIO_Error_Status_t GPIO_enuCfgSpeed(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN,GPIO_PIN_Speed_t Copy_enuPINSpeed);
+GPIO_Error_Status_t GPIO_enuCfgPINPUPD(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN,GPIO_PIN_PUPD_t Copy_enuPINPUPD);
+GPIO_Error_Status_t GPIO_enuCfgPINMode(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Moder_t Copy_enuPINMODE);
+GPIO_Error_Status_t GPIO_enuCfgPINOutType(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Output_Type_t Copy_enuPINOutType);
 
 #endif
