@@ -1,13 +1,16 @@
 #include "rcc.h"
+#include "GPIO.h"
 
 int main(void)
 {
-    RCC_enuCLKControl(HSE, CLK_Enable);
-    PLL_Config_t P = {16, 336, 4, 0, 7};
-    RCC_enuConfigurePLL(&P);
-    RCC_enuCLKControl(PLL, CLK_Enable);
-    RCC_enuSelectSysCLK(HSE);
-    RCC_enuCLKControl(PLL, CLK_Disable);
+    RCC_enuCTRLPeripheral(Peripheral_GPIOA,Peripheral_Enable);
+    GPIO_enuCfgPINMode(GPIO_PORTC,PIN13,Mode_General_Purpose_Output);
+    
     while (1)
-        ;
+    {
+        GPIO_enuPinWrite(GPIO_PORTC, PIN13, PIN_LOW);
+        for(volatile u32 i=0; i<500000; i++);
+        GPIO_enuPinWrite(GPIO_PORTC, PIN13, PIN_HIGH);
+        for(volatile u32 i=0; i<500000; i++);
+    }
 }

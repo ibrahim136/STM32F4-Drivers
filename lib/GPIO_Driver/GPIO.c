@@ -120,7 +120,14 @@ static inline GPIO_Error_Status_t STATE_Check(GPIO_PIN_State_t Copy_enuPINState)
 
 static inline GPIO_Error_Status_t PIN_CONF_Check(PIN_Conf_t * Ref_strPINConf){
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
-    Loc_enuGPIO_Error_Status = PORT_Check(Ref_strPINConf->PORT);
+    if (!Ref_strPINConf)
+    {
+        Loc_enuGPIO_Error_Status = GPIO_InvalidParam;
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PORT_Check(Ref_strPINConf->PORT);
+    }
     if (Loc_enuGPIO_Error_Status == GPIO_OK)
     {
         Loc_enuGPIO_Error_Status = PIN_Check(Ref_strPINConf->PIN);
