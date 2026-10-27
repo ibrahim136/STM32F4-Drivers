@@ -103,14 +103,14 @@ typedef enum
 
 typedef struct{
     GPIO_Port_t PORT;
-    GPIO_PIN_Number_t PIN;
     GPIO_PIN_State_t PIN_State;
     GPIO_PIN_Speed_t PIN_Speed;
     GPIO_PIN_PUPD_t PIN_PUPD;
     GPIO_PIN_Moder_t PIN_Mode;
     GPIO_PIN_Output_Type_t PIN_Type;
     GPIO_PIN_Alernative_Func_t PIN_AF;
-}PIN_Conf_t;
+    GPIO_PIN_Number_t PIN;
+}PIN_PORT_Conf_t;
 
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState);
 GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState);
@@ -121,5 +121,7 @@ GPIO_Error_Status_t GPIO_enuCfgPINPUPD(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number
 GPIO_Error_Status_t GPIO_enuCfgPINMode(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Moder_t Copy_enuPINMODE);
 GPIO_Error_Status_t GPIO_enuCfgPINOutType(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Output_Type_t Copy_enuPINOutType);
 GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Alernative_Func_t Copy_enuPINAF);
-GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf);
+GPIO_Error_Status_t GPIO_enuPinInit(PIN_PORT_Conf_t * Ref_strPINConf);
+GPIO_Error_Status_t GPIO_enuPORTInit(PIN_PORT_Conf_t * Ref_strPORTConf);
+
 #endif

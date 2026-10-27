@@ -59,4 +59,19 @@ typedef struct
 // bitmasking
 #define GPIO_AF_MASK (0xFUL)
 
+//masking register
+#define GPIO_Moder_Reg_MASK (0xFFFFUL)
+#define GPIO_OTYPER_Reg_MASK (0xFFUL)
+#define GPIO_OSPEEDR_Reg_MASK (0xFFFFUL)
+#define GPIO_PUPDR_Reg_MASK (0xFFFFUL)
+#define GPIO_IDR_Reg_MASK (0xFFUL)
+#define GPIO_ODR_Reg_MASK (0xFFUL)
+#define GPIO_BSRR_BR_Reg_MASK (0xFF00UL)
+#define GPIO_BSRR_BS_Reg_MASK (0xFFUL)
+#define GPIO_LCKR_Reg_MASK (0xFFUL)
+#define GPIO_AFRL_Reg_MASK (0xFFFFUL)
+#define GPIO_AFRH_Reg_MASK (0xFFFFUL)
+
+
+
 #endif

@@ -118,7 +118,7 @@ static inline GPIO_Error_Status_t STATE_Check(GPIO_PIN_State_t Copy_enuPINState)
     return Loc_enuGPIO_Error_Status;
 }
 
-static inline GPIO_Error_Status_t PIN_CONF_Check(PIN_Conf_t * Ref_strPINConf){
+static inline GPIO_Error_Status_t PIN_CONF_Check(PIN_PORT_Conf_t * Ref_strPINConf){
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
     if (!Ref_strPINConf)
     {
@@ -354,7 +354,7 @@ GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO
 
 
 
-GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf)
+GPIO_Error_Status_t GPIO_enuPinInit(PIN_PORT_Conf_t * Ref_strPINConf)
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
     Loc_enuGPIO_Error_Status = PIN_CONF_Check(Ref_strPINConf);
@@ -403,4 +403,66 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf)
 
 
     return Loc_enuGPIO_Error_Status;
+}
+
+static inline u32 GPIO_u32OneBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+{
+    u32 Loc_u32Reg = Copy_u32Reg;
+    for (u8 i =0;i<16;i++){
+        Loc_u32Reg <<= 1;
+        Loc_u32Reg |= Copy_BitsToSet;
+    }
+}
+static inline u32 GPIO_u32TwoBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+{
+    u32 Loc_u32Reg = Copy_u32Reg;
+    for (u8 i =0;i<16;i++){
+        Loc_u32Reg <<= 2;
+        Loc_u32Reg |= Copy_BitsToSet;
+    }
+}
+static inline u32 GPIO_u32FourBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+{
+    u32 Loc_u32Reg = Copy_u32Reg;
+    for (u8 i =0;i<16;i++){
+        Loc_u32Reg <<= 4;
+        Loc_u32Reg |= Copy_BitsToSet;
+    }
+}
+
+static inline void GPIO_voidClearingAllRegByMasking(GPIO_Port_t Copy_enuPORT )
+{
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_MODER,GPIO_Moder_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_OSPEEDR,GPIO_OSPEEDR_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_PUPDR,GPIO_PUPDR_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL,GPIO_AFRL_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRH,GPIO_AFRH_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_ODR,GPIO_ODR_Reg_MASK);
+    Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_OTYPER,GPIO_OTYPER_Reg_MASK);
+}
+
+GPIO_Error_Status_t GPIO_enuPORTInit(PIN_PORT_Conf_t * Ref_strPORTConf)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = PIN_CONF_Check(Ref_strPORTConf);
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        GPIO_voidClearingAllRegByMasking(Ref_strPORTConf->PORT);
+
+        u32 Loc_u32ModeReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER,Ref_strPORTConf->PIN_Mode);
+        u32 Loc_u32TypeReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER,Ref_strPORTConf->PIN_Type);
+        u32 Loc_u32SpeedReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR,Ref_strPORTConf->PIN_Speed);
+        u32 Loc_u32PUPDReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR,Ref_strPORTConf->PIN_PUPD);
+        u32 Loc_u32ODRReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR,Ref_strPORTConf->PIN_State);
+        u32 Loc_u32AFRLReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL,Ref_strPORTConf->PIN_AF);
+        u32 Loc_u32AFRHReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH,Ref_strPORTConf->PIN_AF);
+
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER = Loc_u32ModeReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER = Loc_u32TypeReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR = Loc_u32SpeedReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR = Loc_u32PUPDReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR = Loc_u32ODRReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL = Loc_u32AFRLReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH = Loc_u32AFRHReg;
+    }
 }
