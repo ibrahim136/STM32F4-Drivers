@@ -11,7 +11,7 @@
 #define Get_Mask_Value(reg, bit_pos) (reg >> bit_pos)
 #define Masking_Value(value, pos) (value << pos)
 #define Masking_bit(pos) (1UL << pos)
-#define Double_pos(pos) (pos*2)
-#define Quad_pos(pos) (pos*4)
+#define Double_pos(pos) (pos * 2)
+#define Quad_pos(pos) (pos * 4)
 
 #endif

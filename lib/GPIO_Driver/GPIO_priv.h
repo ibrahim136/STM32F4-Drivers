@@ -27,7 +27,7 @@ typedef struct
 
 } GPIO_reg_t;
 
-//PORTS BASE Addresses 
+// PORTS BASE Addresses
 
 #define GPIOA ((volatile GPIO_reg_t *)GPIOA_BASE)
 #define GPIOB ((volatile GPIO_reg_t *)GPIOB_BASE)
@@ -36,27 +36,27 @@ typedef struct
 #define GPIOE ((volatile GPIO_reg_t *)GPIOE_BASE)
 #define GPIOH ((volatile GPIO_reg_t *)GPIOH_BASE)
 
-#define BR(bit) (bit+16)
-#define BS(bit) (bit+0)
-#define Low_to_high_shif(PIN) (PIN-8)
-//GPIO_OSPEEDR reg
-//bit masking
+#define BR(bit) (bit + 16)
+#define BS(bit) (bit + 0)
+#define Low_to_high_shif(PIN) (PIN - 8)
+// GPIO_OSPEEDR reg
+// bit masking
 #define GPIO_OSPEEDR_MASK (0x03UL)
 
-//GPIO_PUDR reg
-//bitmasking
+// GPIO_PUDR reg
+// bitmasking
 #define GPIO_PUPDR_MASK (0x03UL)
 
-//GPIO_MODE reg
-//bitmasking
+// GPIO_MODE reg
+// bitmasking
 #define GPIO_MODE_MASK (0x03UL)
 
-//GPIO_Type reg
-//bitmasking
+// GPIO_Type reg
+// bitmasking
 #define GPIO_Type_MASK (0x01UL)
 
-//GPIO_AF reg
-//bitmasking
+// GPIO_AF reg
+// bitmasking
 #define GPIO_AF_MASK (0xFUL)
 
 #endif
