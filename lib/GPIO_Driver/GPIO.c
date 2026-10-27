@@ -90,6 +90,20 @@ static inline GPIO_Error_Status_t TYPE_Check(GPIO_PIN_Output_Type_t Copy_enuPINO
     return Loc_enuGPIO_Error_Status;
 }
 
+static inline GPIO_Error_Status_t AF_Check(GPIO_PIN_Alernative_Func_t Copy_enuPINAF)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    switch (Copy_enuPINAF)
+    {
+    case AF0 ... AF_Count - 1:
+        break;
+    default:
+        Loc_enuGPIO_Error_Status = GPIO_InvalidParam;
+        break;
+    }
+    return Loc_enuGPIO_Error_Status;
+}
+
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState)
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
@@ -247,6 +261,37 @@ GPIO_Error_Status_t GPIO_enuCfgPINOutType(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Num
     {
         Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_OTYPER, Masking_Value(GPIO_Type_MASK, Copy_enuPIN));
         Set_Mask(GPIOS[Copy_enuPORT]->GPIO_OTYPER, Masking_Value(Copy_enuPINOutType, Copy_enuPIN));
+    }
+    return Loc_enuGPIO_Error_Status;
+}
+
+GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Alernative_Func_t Copy_enuPINAF)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = PORT_Check(Copy_enuPORT);
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PIN_Check(Copy_enuPIN);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = AF_Check(Copy_enuPINAF);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        switch (Copy_enuPIN)
+        {
+        case PIN0 ... PIN7:
+            Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(GPIO_AF_MASK, Quad_pos(Copy_enuPIN)));
+            Set_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(Copy_enuPINAF, Quad_pos(Copy_enuPIN)));
+            break;
+        case PIN8 ... PIN15:
+            Clear_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(GPIO_AF_MASK, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
+            Set_Mask(GPIOS[Copy_enuPORT]->GPIO_AFRL, Masking_Value(Copy_enuPINAF, Quad_pos(Low_to_high_shif(Copy_enuPIN))));
+            break;
+        default:
+            break;
+        }
     }
     return Loc_enuGPIO_Error_Status;
 }

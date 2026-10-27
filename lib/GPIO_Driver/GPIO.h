@@ -75,6 +75,26 @@ typedef enum{
     Type_Count
 }GPIO_PIN_Output_Type_t;
 
+typedef enum{
+    AF0,
+    AF1,
+    AF2,
+    AF3,
+    AF4,
+    AF5,
+    AF6,
+    AF7,
+    AF8,
+    AF9,
+    AF10,
+    AF11,
+    AF12,
+    AF13,
+    AF14,
+    AF15,
+    AF_Count
+}GPIO_PIN_Alernative_Func_t;
+
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState);
 GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t* Ref_enuState);
 GPIO_Error_Status_t GPIO_enuPORTWrite(GPIO_Port_t Copy_enuPORT, u16 Copy_u16PORTState);
@@ -83,5 +103,6 @@ GPIO_Error_Status_t GPIO_enuCfgSpeed(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t
 GPIO_Error_Status_t GPIO_enuCfgPINPUPD(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN,GPIO_PIN_PUPD_t Copy_enuPINPUPD);
 GPIO_Error_Status_t GPIO_enuCfgPINMode(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Moder_t Copy_enuPINMODE);
 GPIO_Error_Status_t GPIO_enuCfgPINOutType(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Output_Type_t Copy_enuPINOutType);
+GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Alernative_Func_t Copy_enuPINAF);
 
 #endif

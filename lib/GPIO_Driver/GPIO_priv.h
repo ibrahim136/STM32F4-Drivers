@@ -38,7 +38,7 @@ typedef struct
 
 #define BR(bit) (bit+16)
 #define BS(bit) (bit+0)
-
+#define Low_to_high_shif(PIN) (PIN-8)
 //GPIO_OSPEEDR reg
 //bit masking
 #define GPIO_OSPEEDR_MASK (0x03UL)
@@ -54,5 +54,9 @@ typedef struct
 //GPIO_Type reg
 //bitmasking
 #define GPIO_Type_MASK (0x01UL)
+
+//GPIO_AF reg
+//bitmasking
+#define GPIO_AF_MASK (0xFUL)
 
 #endif
