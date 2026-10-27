@@ -104,6 +104,55 @@ static inline GPIO_Error_Status_t AF_Check(GPIO_PIN_Alernative_Func_t Copy_enuPI
     return Loc_enuGPIO_Error_Status;
 }
 
+static inline GPIO_Error_Status_t STATE_Check(GPIO_PIN_State_t Copy_enuPINState)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    switch (Copy_enuPINState)
+    {
+    case PIN_LOW ... PIN_State_Count - 1:
+        break;
+    default:
+        Loc_enuGPIO_Error_Status = GPIO_InvalidParam;
+        break;
+    }
+    return Loc_enuGPIO_Error_Status;
+}
+
+static inline GPIO_Error_Status_t PIN_CONF_Check(PIN_Conf_t * Ref_strPINConf){
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = PORT_Check(Ref_strPINConf->PORT);
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PIN_Check(Ref_strPINConf->PIN);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = MODE_Check(Ref_strPINConf->PIN_Mode);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = SPEED_Check(Ref_strPINConf->PIN_Speed);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PUPD_Check(Ref_strPINConf->PIN_PUPD);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = AF_Check(Ref_strPINConf->PIN_AF);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = STATE_Check(Ref_strPINConf->PIN_State);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = TYPE_Check(Ref_strPINConf->PIN_Type);
+    }
+    return Loc_enuGPIO_Error_Status;
+
+}
+
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState)
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
@@ -293,5 +342,42 @@ GPIO_Error_Status_t GPIO_enuCfgPINAlternativeFunc(GPIO_Port_t Copy_enuPORT, GPIO
             break;
         }
     }
+    return Loc_enuGPIO_Error_Status;
+}
+
+
+
+GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = PIN_CONF_Check(Ref_strPINConf);
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        switch (Ref_strPINConf->PIN) //low or high
+        {
+        case PIN_LOW:
+            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BR(Ref_strPINConf->PIN));
+            break;
+        default:
+            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BS(Ref_strPINConf->PIN));
+            break;
+        }
+        //setting speed
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(GPIO_OSPEEDR_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(Ref_strPINConf->PIN_Speed, Double_pos(Ref_strPINConf->PIN)));
+
+        //setting PUPD
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(GPIO_PUPDR_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(Ref_strPINConf->PIN_PUPD, Double_pos(Ref_strPINConf->PIN)));
+
+        //setting Mode
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(GPIO_MODE_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(Ref_strPINConf->PIN_Mode, Double_pos(Ref_strPINConf->PIN)));
+
+        
+    }
+
+
+
     return Loc_enuGPIO_Error_Status;
 }
