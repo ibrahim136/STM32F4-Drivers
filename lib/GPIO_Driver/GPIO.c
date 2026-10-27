@@ -353,7 +353,7 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf)
     Loc_enuGPIO_Error_Status = PIN_CONF_Check(Ref_strPINConf);
     if (Loc_enuGPIO_Error_Status == GPIO_OK)
     {
-        switch (Ref_strPINConf->PIN) //low or high
+        switch (Ref_strPINConf->PIN_State) //low or high
         {
         case PIN_LOW:
             GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BR(Ref_strPINConf->PIN));
@@ -374,7 +374,23 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_Conf_t * Ref_strPINConf)
         Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(GPIO_MODE_MASK, Double_pos(Ref_strPINConf->PIN)));
         Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(Ref_strPINConf->PIN_Mode, Double_pos(Ref_strPINConf->PIN)));
 
-        
+        //setting Type
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(GPIO_Type_MASK, Ref_strPINConf->PIN));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(Ref_strPINConf->PIN_Type, Ref_strPINConf->PIN));
+
+        //setting AF
+        switch (Ref_strPINConf->PIN)
+        {
+        case PIN0 ... PIN7:
+            Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_AFRL, Masking_Value(GPIO_AF_MASK, Quad_pos(Ref_strPINConf->PIN)));
+            Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_AFRL, Masking_Value(Ref_strPINConf->PIN_AF, Quad_pos(Ref_strPINConf->PIN)));
+            break;
+        default:
+            Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_AFRH, Masking_Value(GPIO_AF_MASK, Quad_pos(Low_to_high_shif(Ref_strPINConf->PIN))));
+            Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_AFRH, Masking_Value(Ref_strPINConf->PIN_AF, Quad_pos(Low_to_high_shif(Ref_strPINConf->PIN))));
+            break;
+        }
+
     }
 
 
