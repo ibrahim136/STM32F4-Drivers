@@ -4,6 +4,7 @@
 #include "STD_types.h"
 
 #define TIMEOUT 100000
+#define GPIO_COUNT 6
 
 #define GPIOA_BASE ((volatile u32 *)(0x40020000UL))
 #define GPIOB_BASE ((volatile u32 *)(0x40020400UL))

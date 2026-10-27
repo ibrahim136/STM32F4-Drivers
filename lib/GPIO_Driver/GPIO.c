@@ -3,7 +3,7 @@
 #include "Bit_math.h"
 #include "STD_types.h"
 
-static volatile GPIO_reg_t *GPIOS[6] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOH};
+static volatile GPIO_reg_t *GPIOS[GPIO_COUNT] = {GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOH};
 
 static inline GPIO_Error_Status_t PORT_Check(GPIO_Port_t Copy_enuPORT)
 {
@@ -405,29 +405,33 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_PORT_Conf_t * Ref_strPINConf)
     return Loc_enuGPIO_Error_Status;
 }
 
-static inline u32 GPIO_u32OneBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+static inline volatile u32 GPIO_u32OneBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
 {
-    u32 Loc_u32Reg = Copy_u32Reg;
+    volatile u32 Loc_u32Reg = Copy_u32Reg;
     for (u8 i =0;i<16;i++){
         Loc_u32Reg <<= 1;
         Loc_u32Reg |= Copy_BitsToSet;
     }
+    return Loc_u32Reg;
 }
-static inline u32 GPIO_u32TwoBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+static inline volatile u32 GPIO_u32TwoBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
 {
-    u32 Loc_u32Reg = Copy_u32Reg;
+    volatile u32 Loc_u32Reg = Copy_u32Reg;
     for (u8 i =0;i<16;i++){
         Loc_u32Reg <<= 2;
         Loc_u32Reg |= Copy_BitsToSet;
     }
+    return Loc_u32Reg;
 }
-static inline u32 GPIO_u32FourBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
+static inline volatile u32 GPIO_u32FourBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
 {
-    u32 Loc_u32Reg = Copy_u32Reg;
+    volatile u32 Loc_u32Reg = Copy_u32Reg;
     for (u8 i =0;i<16;i++){
         Loc_u32Reg <<= 4;
         Loc_u32Reg |= Copy_BitsToSet;
     }
+    return Loc_u32Reg;
+    
 }
 
 static inline void GPIO_voidClearingAllRegByMasking(GPIO_Port_t Copy_enuPORT )
@@ -449,13 +453,13 @@ GPIO_Error_Status_t GPIO_enuPORTInit(PIN_PORT_Conf_t * Ref_strPORTConf)
     {
         GPIO_voidClearingAllRegByMasking(Ref_strPORTConf->PORT);
 
-        u32 Loc_u32ModeReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER,Ref_strPORTConf->PIN_Mode);
-        u32 Loc_u32TypeReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER,Ref_strPORTConf->PIN_Type);
-        u32 Loc_u32SpeedReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR,Ref_strPORTConf->PIN_Speed);
-        u32 Loc_u32PUPDReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR,Ref_strPORTConf->PIN_PUPD);
-        u32 Loc_u32ODRReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR,Ref_strPORTConf->PIN_State);
-        u32 Loc_u32AFRLReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL,Ref_strPORTConf->PIN_AF);
-        u32 Loc_u32AFRHReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH,Ref_strPORTConf->PIN_AF);
+        volatile u32 Loc_u32ModeReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER,Ref_strPORTConf->PIN_Mode);
+        volatile u32 Loc_u32TypeReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER,Ref_strPORTConf->PIN_Type);
+        volatile u32 Loc_u32SpeedReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR,Ref_strPORTConf->PIN_Speed);
+        volatile u32 Loc_u32PUPDReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR,Ref_strPORTConf->PIN_PUPD);
+        volatile u32 Loc_u32ODRReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR,Ref_strPORTConf->PIN_State);
+        volatile u32 Loc_u32AFRLReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL,Ref_strPORTConf->PIN_AF);
+        volatile u32 Loc_u32AFRHReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH,Ref_strPORTConf->PIN_AF);
 
         GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER = Loc_u32ModeReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER = Loc_u32TypeReg;
