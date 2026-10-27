@@ -6,8 +6,7 @@ int main(void)
     RCC_enuCTRLPeripheral(Peripheral_GPIOC,Peripheral_Enable);
     GPIO_enuCfgPINMode(GPIO_PORTC,PIN13,Mode_General_Purpose_Output);
 
-    PIN_PORT_Conf_t PORT = {GPIO_PORTA,PIN_HIGH,Low_Speed,No_pull_up_pull_down,Mode_General_Purpose_Output,Push_Pull,AF0};
-    GPIO_enuPORTInit(&PORT);
+    
     while (1)
     {
         GPIO_enuPinWrite(GPIO_PORTC, PIN13, PIN_LOW);
