@@ -1,5 +1,7 @@
 #include "rcc.h"
 #include "GPIO.h"
+#include "HLED_cfg.h"
+#include "HLED.h"
 
 int main(void)
 {

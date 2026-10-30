@@ -1,10 +1,11 @@
 #ifndef GPIO_H
 #define GPIO_H
 
+#include "STD_types.h"
+
 typedef enum
 {
     GPIO_OK,
-    GPIO_Timeout,
     GPIO_InvalidParam
 } GPIO_Error_Status_t;
 

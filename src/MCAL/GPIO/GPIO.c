@@ -469,4 +469,5 @@ GPIO_Error_Status_t GPIO_enuPORTInit(PIN_PORT_Conf_t * Ref_strPORTConf)
         GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL = Loc_u32AFRLReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH = Loc_u32AFRHReg;
     }
+    return Loc_enuGPIO_Error_Status;
 }
