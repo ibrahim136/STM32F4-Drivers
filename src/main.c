@@ -3,7 +3,7 @@
 #include "HLED_cfg.h"
 #include "HLED.h"
 
-int main(void)
+/*int main(void)
 {
     RCC_enuCTRLPeripheral(Peripheral_GPIOA, Peripheral_Enable);
     RCC_enuCTRLPeripheral(Peripheral_GPIOB, Peripheral_Enable);
@@ -26,10 +26,10 @@ int main(void)
         for (int i = 0; i < 3; i++)
         {
             u8 temp = 0;
-            GPIO_enuPinRead(GPIO_PORTA, i, &temp);
+            GPIO_enuPinReadInput(GPIO_PORTA, i, &temp);
             for(int i=0;i<5000;i++);
             u8 temp_2 =0;
-            GPIO_enuPinRead(GPIO_PORTA, i, &temp_2);
+            GPIO_enuPinReadInput(GPIO_PORTA, i, &temp_2);
             temp = temp & temp_2;
             for (int j = 0; j < i; j++)
             {
@@ -49,5 +49,18 @@ int main(void)
                 GPIO_enuPinWrite(GPIO_PORTB, i, PIN_LOW);
             }
         }
+    }
+}
+    */
+
+int main (){
+    HLED_enuInit();
+    while(1)
+    {
+        HLED_enuTurnOn(Break_LED);
+        for (volatile u32 i=0;i<500000;i++);
+        HLED_enuTurnOff(Break_LED);
+        for (volatile u32 i=0;i<500000;i++);
+        
     }
 }

@@ -34,6 +34,11 @@ typedef struct{
     HLED_Active_state_t Active_State;
 }HLED_cfg_t;
 
+HLED_Error_Status_t HLED_enuInit();
+HLED_Error_Status_t HLED_enuTurnOn(HLED_LEDS_t Copy_enuLED);
+HLED_Error_Status_t HLED_enuTurnOff(HLED_LEDS_t Copy_enuLED);
+HLED_Error_Status_t HLED_enuToggle(HLED_LEDS_t Copy_enuLED);
+
 
 
 

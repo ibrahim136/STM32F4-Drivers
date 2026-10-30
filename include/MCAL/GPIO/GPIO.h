@@ -114,7 +114,8 @@ typedef struct{
 }PIN_PORT_Conf_t;
 
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState);
-GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState);
+GPIO_Error_Status_t GPIO_enuPinReadInput(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState);
+GPIO_Error_Status_t GPIO_enuPinReadOutput(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState);
 GPIO_Error_Status_t GPIO_enuPORTWrite(GPIO_Port_t Copy_enuPORT, u16 Copy_u16PORTState);
 GPIO_Error_Status_t GPIO_enuPORTRead(GPIO_Port_t Copy_enuPORT, u16 *Copy_u16PORTState);
 GPIO_Error_Status_t GPIO_enuCfgSpeed(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_Speed_t Copy_enuPINSpeed);

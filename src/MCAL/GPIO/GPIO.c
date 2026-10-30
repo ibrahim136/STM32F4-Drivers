@@ -190,7 +190,7 @@ GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t
     return Loc_enuGPIO_Error_Status;
 }
 
-GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState)
+GPIO_Error_Status_t GPIO_enuPinReadInput(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState)
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
     if (!Ref_enuState)
@@ -208,6 +208,28 @@ GPIO_Error_Status_t GPIO_enuPinRead(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t 
     if (Loc_enuGPIO_Error_Status == GPIO_OK)
     {
         *Ref_enuState = (GPIO_PIN_State_t)Get_bit(GPIOS[Copy_enuPORT]->GPIO_IDR, Copy_enuPIN);
+    }
+    return Loc_enuGPIO_Error_Status;
+}
+
+GPIO_Error_Status_t GPIO_enuPinReadOutput(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t *Ref_enuState)
+{
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    if (!Ref_enuState)
+    {
+        Loc_enuGPIO_Error_Status = GPIO_InvalidParam;
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PORT_Check(Copy_enuPORT);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        Loc_enuGPIO_Error_Status = PIN_Check(Copy_enuPIN);
+    }
+    if (Loc_enuGPIO_Error_Status == GPIO_OK)
+    {
+        *Ref_enuState = (GPIO_PIN_State_t)Get_bit(GPIOS[Copy_enuPORT]->GPIO_ODR, Copy_enuPIN);
     }
     return Loc_enuGPIO_Error_Status;
 }

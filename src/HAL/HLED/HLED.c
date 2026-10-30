@@ -73,16 +73,6 @@ HLED_Error_Status_t HLED_enuInit()
             Loc_enuHLED_Error_Status = HLED_enuRCCErrorToHLEDError(Loc_enuRCC_Error_Status);
             break;
         }
-        //         typedef struct{
-        //     GPIO_Port_t PORT;
-        //     GPIO_PIN_State_t PIN_State;
-        //     GPIO_PIN_Speed_t PIN_Speed;
-        //     GPIO_PIN_PUPD_t PIN_PUPD;
-        //     GPIO_PIN_Moder_t PIN_Mode;
-        //     GPIO_PIN_Output_Type_t PIN_Type;
-        //     GPIO_PIN_Alernative_Func_t PIN_AF;
-        //     GPIO_PIN_Number_t PIN;
-        // }PIN_PORT_Conf_t;
         PIN_PORT_Conf_t Loc_strPIN_PORT_Conf = {
             .PORT = HLED_cfg[i].PORT,
             .PIN_State = HLED_cfg[i].Active_State == Active_HIGH ? PIN_LOW : PIN_HIGH,
@@ -94,13 +84,54 @@ HLED_Error_Status_t HLED_enuInit()
             .PIN = HLED_cfg[i].PIN
 
         };
-        Loc_enuGPIO_Error_Status =  GPIO_enuPinInit(&Loc_strPIN_PORT_Conf);
+        Loc_enuGPIO_Error_Status = GPIO_enuPinInit(&Loc_strPIN_PORT_Conf);
         if (Loc_enuGPIO_Error_Status != GPIO_OK)
         {
             Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
         }
-        
     }
 
+    return Loc_enuHLED_Error_Status;
+}
+
+HLED_Error_Status_t HLED_enuTurnOn(HLED_LEDS_t Copy_enuLED)
+{
+    HLED_Error_Status_t Loc_enuHLED_Error_Status = HLED_OK;
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = GPIO_enuPinWrite(HLED_cfg[Copy_enuLED].PORT, HLED_cfg[Copy_enuLED].PIN, PIN_HIGH);
+    Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+    return Loc_enuHLED_Error_Status;
+}
+
+HLED_Error_Status_t HLED_enuTurnOff(HLED_LEDS_t Copy_enuLED)
+{
+    HLED_Error_Status_t Loc_enuHLED_Error_Status = HLED_OK;
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    Loc_enuGPIO_Error_Status = GPIO_enuPinWrite(HLED_cfg[Copy_enuLED].PORT, HLED_cfg[Copy_enuLED].PIN, PIN_LOW);
+    Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+    return Loc_enuHLED_Error_Status;
+}
+
+HLED_Error_Status_t HLED_enuToggle(HLED_LEDS_t Copy_enuLED)
+{
+    HLED_Error_Status_t Loc_enuHLED_Error_Status = HLED_OK;
+    GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
+    GPIO_PIN_State_t Loc_enuPIN_State;
+    Loc_enuGPIO_Error_Status = GPIO_enuPinReadOutput(HLED_cfg[Copy_enuLED].PORT, HLED_cfg[Copy_enuLED].PIN, &Loc_enuPIN_State);
+    Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+    if (Loc_enuHLED_Error_Status == HLED_OK)
+    {
+        switch (Loc_enuPIN_State)
+        {
+        case PIN_LOW:
+            Loc_enuGPIO_Error_Status = GPIO_enuPinWrite(HLED_cfg[Copy_enuLED].PORT, HLED_cfg[Copy_enuLED].PIN, PIN_HIGH);
+            Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+            break;
+        default:
+            Loc_enuGPIO_Error_Status = GPIO_enuPinWrite(HLED_cfg[Copy_enuLED].PORT, HLED_cfg[Copy_enuLED].PIN, PIN_LOW);
+            Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+            break;
+        }
+    }
     return Loc_enuHLED_Error_Status;
 }
