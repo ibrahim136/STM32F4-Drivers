@@ -2,6 +2,7 @@
 #include "GPIO.h"
 #include "HLED_cfg.h"
 #include "HLED.h"
+#include "SysTick.h"
 
 /*int main(void)
 {
@@ -58,9 +59,9 @@ int main (){
     while(1)
     {
         HLED_enuTurnOn(Break_LED);
-        for (volatile u32 i=0;i<500000;i++);
+        STK_voidDelay(1000);
         HLED_enuTurnOff(Break_LED);
-        for (volatile u32 i=0;i<500000;i++);
+        STK_voidDelay(1000);
         
     }
 }

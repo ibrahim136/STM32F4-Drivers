@@ -48,4 +48,6 @@ typedef struct
 // bit masking
 #define Sys_Tick_STK_CALIB_TENMS_MASK (0xFFFFFFFUL << Sys_Tick_STK_CALIB_TENMS)
 
+#define Counter_For_AHB_divided_8_to_get_1ms 1999
+
 #endif
