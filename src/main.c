@@ -60,8 +60,10 @@ int main (){
     {
         HLED_enuTurnOn(Break_LED);
         STK_voidDelay(1000);
+        HLED_enuToggle(Turn_Indicator_LED);
         HLED_enuTurnOff(Break_LED);
         STK_voidDelay(1000);
+        HLED_enuToggle(Turn_Indicator_LED);
         
     }
 }
