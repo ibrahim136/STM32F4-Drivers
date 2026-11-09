@@ -21,7 +21,7 @@ static inline CLK_Type_t RCC_enuGetPLLSRCCLK()
 RCC_Error_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType, CLK_Status_t *Ref_enuCLKStatus)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
-    u8 check_bit=0;
+    u8 check_bit = 0;
     if (!Ref_enuCLKStatus)
     {
         Loc_enuRCC_Error_Status = RCC_InvalidPtr;
@@ -60,9 +60,9 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u32 Loc_u32TimeOut = TIMEOUT;
-    u8 Loc_u8targetbit=0;
-    u8 Loc_u8readytbit=0;
-    u8 Loc_u8check;
+    u8 Loc_u8targetbit = 0;
+    u8 Loc_u8readytbit = 0;
+    u8 Loc_u8check=0;
     switch (Copy_enuCLKType)
     {
     case HSI:
@@ -168,7 +168,7 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u32 Loc_u32TimeOut = TIMEOUT;
-    u8 Loc_u8targetSWValue=0;
+    u8 Loc_u8targetSWValue = 0;
     CLK_Status_t Loc_enuCLKState;
     Loc_enuRCC_Error_Status = RCC_enuGetCLKStatus(Copy_enuCLKType, &Loc_enuCLKState);
     if (Loc_enuCLKState != CLK_Enable)
@@ -214,8 +214,8 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
 RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Copy_enuPrescaler)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
-    u32 Loc_u8TargetToSetMask = 0x00UL;
-    u32 Loc_u8TargetToClearMask = 0x00UL;
+    u32 Loc_u32TargetToSetMask = 0x00UL;
+    u32 Loc_u32TargetToClearMask = 0x00UL;
     switch (Copy_enuBus)
     {
     case AHB:
@@ -225,7 +225,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         else
         {
-            Loc_u8TargetToSetMask = Copy_enuPrescaler;
+            Loc_u32TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     case APB1:
@@ -235,7 +235,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         else
         {
-            Loc_u8TargetToSetMask = Copy_enuPrescaler;
+            Loc_u32TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     case APB2:
@@ -245,7 +245,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         else
         {
-            Loc_u8TargetToSetMask = Copy_enuPrescaler;
+            Loc_u32TargetToSetMask = Copy_enuPrescaler;
         }
         break;
     default:
@@ -257,16 +257,16 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         switch (Copy_enuBus)
         {
         case AHB:
-            Loc_u8TargetToSetMask <<= RCC_CFGR_HPRE;
-            Loc_u8TargetToClearMask = RCC_CFGR_HPRE_MASK;
+            Loc_u32TargetToSetMask <<= RCC_CFGR_HPRE;
+            Loc_u32TargetToClearMask = RCC_CFGR_HPRE_MASK;
             break;
         case APB1:
-            Loc_u8TargetToSetMask <<= RCC_CFGR_PPRE1;
-            Loc_u8TargetToClearMask = RCC_CFGR_PPRE1_MASK;
+            Loc_u32TargetToSetMask <<= RCC_CFGR_PPRE1;
+            Loc_u32TargetToClearMask = RCC_CFGR_PPRE1_MASK;
             break;
         case APB2:
-            Loc_u8TargetToSetMask <<= RCC_CFGR_PPRE2;
-            Loc_u8TargetToClearMask = RCC_CFGR_PPRE2_MASK;
+            Loc_u32TargetToSetMask <<= RCC_CFGR_PPRE2;
+            Loc_u32TargetToClearMask = RCC_CFGR_PPRE2_MASK;
             break;
         default:
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
@@ -275,8 +275,8 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     }
     if (Loc_enuRCC_Error_Status == RCC_OK)
     {
-        Clear_Mask(RCC_reg->RCC_CFGR, Loc_u8TargetToClearMask);
-        Set_Mask(RCC_reg->RCC_CFGR, Loc_u8TargetToSetMask);
+        Clear_Mask(RCC_reg->RCC_CFGR, Loc_u32TargetToClearMask);
+        Set_Mask(RCC_reg->RCC_CFGR, Loc_u32TargetToSetMask);
     }
     return Loc_enuRCC_Error_Status;
 }
@@ -371,7 +371,7 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
 
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u8 Copy_u8CLKFreq;
-    if (Copy_strPLLConfig == nullptr) // check null
+    if (!Copy_strPLLConfig)
     {
         Loc_enuRCC_Error_Status = RCC_InvalidParam;
     }
@@ -502,19 +502,26 @@ RCC_Error_Status_t RCC_enuGetSysCLKFreq(u32 *Ref_u32Freq)
 RCC_Error_Status_t GetRCC_enuResetCause(RCC_ResetCause_t *Ref_enuResetCause)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
-    *Ref_enuResetCause = RCC_Reset_Cause_UNKNOWN;
-    u8 Loc_u8BitPosition = RCC_CSR_ResetCauseStartBit;
-    u32 Loc_u32RCC_CSR = RCC_reg->RCC_CSR;
-    while (Loc_u8BitPosition <= RCC_CSR_ResetCauseEndBit)
+    if (!Ref_enuResetCause)
     {
-        u8 Loc_u8TempFlag = Get_bit(Loc_u32RCC_CSR, Loc_u8BitPosition);
-        if (Loc_u8TempFlag)
-        {
-            *Ref_enuResetCause = (RCC_ResetCause_t)Loc_u8BitPosition;
-            break;
-        }
-        Loc_u8BitPosition++;
+        Loc_enuRCC_Error_Status = RCC_InvalidPtr;
     }
-    Set_Bit(RCC_reg->RCC_CSR, RCC_CSR_RMVF);
+    else
+    {
+        *Ref_enuResetCause = RCC_Reset_Cause_UNKNOWN;
+        u8 Loc_u8BitPosition = RCC_CSR_ResetCauseStartBit;
+        u32 Loc_u32RCC_CSR = RCC_reg->RCC_CSR;
+        while (Loc_u8BitPosition <= RCC_CSR_ResetCauseEndBit)
+        {
+            u8 Loc_u8TempFlag = Get_bit(Loc_u32RCC_CSR, Loc_u8BitPosition);
+            if (Loc_u8TempFlag)
+            {
+                *Ref_enuResetCause = (RCC_ResetCause_t)Loc_u8BitPosition;
+                break;
+            }
+            Loc_u8BitPosition++;
+        }
+        Set_Bit(RCC_reg->RCC_CSR, RCC_CSR_RMVF);
+    }
     return Loc_enuRCC_Error_Status;
 }
