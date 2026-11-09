@@ -10,6 +10,7 @@ typedef enum{
     PINA5,
     PINA6,
     PINA7,
+    LED_BUILTIN_PINC13,
     NUM_OF_LED
 }HLED_LEDS_t;
 

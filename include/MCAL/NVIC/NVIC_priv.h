@@ -3,6 +3,8 @@
 
 #include "STD_types.h"
 
+#define NVIC_BASE ((volatile u32*)(0xE000E100))
+
 typedef struct
 {
     u32 NVIC_ISERx[8];
@@ -21,7 +23,6 @@ typedef struct
 
 }NVIC_reg_t;
 
-#define NVIC_BASE ((volatile u32*)(0xE000E100))
 #define NVIC_reg ((volatile NVIC_reg_t*)(NVIC_BASE))
 
 #define Register_Bits_Capacity 32UL

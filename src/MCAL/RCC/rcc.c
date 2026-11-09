@@ -3,7 +3,7 @@
 #include "rcc_priv.h"
 #include "Bit_math.h"
 
-inline CLK_Type_t RCC_enuGetPLLSRCCLK()
+static inline CLK_Type_t RCC_enuGetPLLSRCCLK()
 {
     u8 Loc_u8PLLSRC = Get_bit(RCC_reg->RCC_PLLCFGR, RCC_PLLCFGR_PLLSRC);
     CLK_Type_t Loc_enuPLLSRCCLKType;
@@ -18,38 +18,50 @@ inline CLK_Type_t RCC_enuGetPLLSRCCLK()
     return Loc_enuPLLSRCCLKType;
 }
 
-CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType)
+RCC_Error_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType, CLK_Status_t *Ref_enuCLKStatus)
 {
-    CLK_Status_t CLKState = CLK_Enable;
-    u8 check_bit;
-    switch (Copy_enuCLKType)
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    u8 check_bit=0;
+    if (!Ref_enuCLKStatus)
     {
-    case HSI:
-        check_bit = RCC_CR_HSION;
-        break;
-    case HSE:
-        check_bit = RCC_CR_HSEON;
-        break;
-    case PLL:
-        check_bit = RCC_CR_PLLON;
-        break;
-    default:
-        CLKState = UNDEFINED;
-        break;
+        Loc_enuRCC_Error_Status = RCC_InvalidPtr;
     }
-    if (CLKState != UNDEFINED && !(Get_bit(RCC_reg->RCC_CR, check_bit)))
+    else
     {
-        CLKState = CLK_Disable;
+        *Ref_enuCLKStatus = CLK_Enable;
     }
-    return CLKState;
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        switch (Copy_enuCLKType)
+        {
+        case HSI:
+            check_bit = RCC_CR_HSION;
+            break;
+        case HSE:
+            check_bit = RCC_CR_HSEON;
+            break;
+        case PLL:
+            check_bit = RCC_CR_PLLON;
+            break;
+        default:
+            *Ref_enuCLKStatus = UNDEFINED;
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+            break;
+        }
+    }
+    if (*Ref_enuCLKStatus != UNDEFINED && !(Get_bit(RCC_reg->RCC_CR, check_bit)))
+    {
+        *Ref_enuCLKStatus = CLK_Disable;
+    }
+    return Loc_enuRCC_Error_Status;
 }
 
 RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Copy_enuCLKStatus)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u32 Loc_u32TimeOut = TIMEOUT;
-    u8 Loc_u8targetbit;
-    u8 Loc_u8readytbit;
+    u8 Loc_u8targetbit=0;
+    u8 Loc_u8readytbit=0;
     u8 Loc_u8check;
     switch (Copy_enuCLKType)
     {
@@ -77,7 +89,8 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             if (Loc_u8targetbit == RCC_CR_PLLON)
             {
                 CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
-                CLK_Status_t Loc_enuPLLSRCCLKState = RCC_enuGetCLKStatus(Loc_enuPLLSRCCLK);
+                CLK_Status_t Loc_enuPLLSRCCLKState;
+                Loc_enuRCC_Error_Status = RCC_enuGetCLKStatus(Loc_enuPLLSRCCLK, &Loc_enuPLLSRCCLKState);
                 if (Loc_enuPLLSRCCLKState != CLK_Enable)
                 {
                     Loc_enuRCC_Error_Status = RCC_PLLSRCDisabled;
@@ -93,7 +106,8 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             case RCC_CR_HSION:
             {
                 CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
-                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                CLK_Type_t Loc_enuSysCLK;
+                Loc_enuRCC_Error_Status = RCC_enuGetSysCLK(&Loc_enuSysCLK);
                 if ((Loc_enuPLLSRCCLK == HSI && Get_bit(RCC_reg->RCC_CR, RCC_CR_PLLON)) || Loc_enuSysCLK == HSI)
                 {
                     Loc_enuRCC_Error_Status = RCC_ClockInUse;
@@ -106,7 +120,8 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             case RCC_CR_HSEON:
             {
                 CLK_Type_t Loc_enuPLLSRCCLK = RCC_enuGetPLLSRCCLK();
-                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                CLK_Type_t Loc_enuSysCLK;
+                Loc_enuRCC_Error_Status = RCC_enuGetSysCLK(&Loc_enuSysCLK);
                 if ((Loc_enuPLLSRCCLK == HSE && Get_bit(RCC_reg->RCC_CR, RCC_CR_PLLON)) || Loc_enuSysCLK == HSE)
                 {
                     Loc_enuRCC_Error_Status = RCC_ClockInUse;
@@ -118,7 +133,9 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
             }
             default:
             {
-                CLK_Type_t Loc_enuSysCLK = RCC_enuGetSysCLK();
+                CLK_Type_t Loc_enuSysCLK;
+                Loc_enuRCC_Error_Status = RCC_enuGetSysCLK(&Loc_enuSysCLK);
+
                 if (Loc_enuSysCLK == PLL)
                 {
                     Loc_enuRCC_Error_Status = RCC_ClockInUse;
@@ -151,8 +168,9 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
 {
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     u32 Loc_u32TimeOut = TIMEOUT;
-    u8 Loc_u8targetSWValue;
-    CLK_Status_t Loc_enuCLKState = RCC_enuGetCLKStatus(Copy_enuCLKType);
+    u8 Loc_u8targetSWValue=0;
+    CLK_Status_t Loc_enuCLKState;
+    Loc_enuRCC_Error_Status = RCC_enuGetCLKStatus(Copy_enuCLKType, &Loc_enuCLKState);
     if (Loc_enuCLKState != CLK_Enable)
     {
         Loc_enuRCC_Error_Status = RCC_CLKDisabled;
@@ -357,7 +375,9 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
     {
         Loc_enuRCC_Error_Status = RCC_InvalidParam;
     }
-    if (Loc_enuRCC_Error_Status == RCC_OK && RCC_enuGetCLKStatus(PLL) == CLK_Enable) // check PLLDisable
+    CLK_Status_t Loc_enuCLKStatus;
+    RCC_enuGetCLKStatus(PLL, &Loc_enuCLKStatus);
+    if (Loc_enuRCC_Error_Status == RCC_OK && Loc_enuCLKStatus == CLK_Enable) // check PLLDisable
     {
         Loc_enuRCC_Error_Status = RCC_PLLEnabled;
     }
@@ -400,30 +420,37 @@ RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig)
     return Loc_enuRCC_Error_Status;
 }
 
-CLK_Type_t RCC_enuGetSysCLK()
+RCC_Error_Status_t RCC_enuGetSysCLK(CLK_Type_t *Ref_enuCLKType)
 {
-    u8 Loc_u8RCC_CFGR_SWS = Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_SWS_MASK);
-    Loc_u8RCC_CFGR_SWS = Get_Mask_Value(Loc_u8RCC_CFGR_SWS, RCC_CFGR_SWS);
-    CLK_Type_t Loc_enuCLKType;
-    switch (Loc_u8RCC_CFGR_SWS)
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    if (!Ref_enuCLKType)
     {
-    case 0x00UL:
-        Loc_enuCLKType = HSI;
-        break;
-    case 0x01UL:
-        Loc_enuCLKType = HSE;
-        break;
-    case 0x02UL:
-        Loc_enuCLKType = PLL;
-        break;
-    default:
-        Loc_enuCLKType = Not_applicable;
-        break;
+        Loc_enuRCC_Error_Status = RCC_InvalidPtr;
     }
-    return Loc_enuCLKType;
+    else
+    {
+        u8 Loc_u8RCC_CFGR_SWS = Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_SWS_MASK);
+        Loc_u8RCC_CFGR_SWS = Get_Mask_Value(Loc_u8RCC_CFGR_SWS, RCC_CFGR_SWS);
+        switch (Loc_u8RCC_CFGR_SWS)
+        {
+        case SWS_HSI:
+            *Ref_enuCLKType = HSI;
+            break;
+        case SWS_HSE:
+            *Ref_enuCLKType = HSE;
+            break;
+        case SWS_PLL:
+            *Ref_enuCLKType = PLL;
+            break;
+        default:
+            *Ref_enuCLKType = Not_applicable;
+            break;
+        }
+    }
+    return Loc_enuRCC_Error_Status;
 }
 
-inline u32 RCC_u32GetPLLSysFreq()
+static inline u32 RCC_u32GetPLLSysFreq()
 {
     u32 freq;
     u32 Loc_u32PLLCFGR = RCC_reg->RCC_PLLCFGR;
@@ -444,29 +471,38 @@ inline u32 RCC_u32GetPLLSysFreq()
     return freq;
 }
 
-u32 RCC_u32GetSysCLKFreq()
+RCC_Error_Status_t RCC_enuGetSysCLKFreq(u32 *Ref_u32Freq)
 {
-    CLK_Type_t Loc_enuSysCLKType = RCC_enuGetSysCLK();
-    u32 freq;
-    switch (Loc_enuSysCLKType)
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    if (!Ref_u32Freq)
     {
-    case HSI:
-        freq = blackpill_f401cc_STM32F401CC_HSI_Freq * MHZ_to_HZ;
-        break;
-    case HSE:
-        freq = blackpill_f401cc_STM32F401CC_HSE_Freq * MHZ_to_HZ;
-        break;
-
-    default:
-        freq = RCC_u32GetPLLSysFreq();
-        break;
+        Loc_enuRCC_Error_Status = RCC_InvalidPtr;
     }
-    return freq;
+    else
+    {
+        CLK_Type_t Loc_enuSysCLKType;
+        Loc_enuRCC_Error_Status = RCC_enuGetSysCLK(&Loc_enuSysCLKType);
+        switch (Loc_enuSysCLKType)
+        {
+        case HSI:
+            *Ref_u32Freq = blackpill_f401cc_STM32F401CC_HSI_Freq * MHZ_to_HZ;
+            break;
+        case HSE:
+            *Ref_u32Freq = blackpill_f401cc_STM32F401CC_HSE_Freq * MHZ_to_HZ;
+            break;
+
+        default:
+            *Ref_u32Freq = RCC_u32GetPLLSysFreq();
+            break;
+        }
+    }
+    return Loc_enuRCC_Error_Status;
 }
 
-RCC_ResetCause_t RCC_enuGetResetCause()
+RCC_Error_Status_t GetRCC_enuResetCause(RCC_ResetCause_t *Ref_enuResetCause)
 {
-    RCC_ResetCause_t Loc_enuResetCause = RCC_Reset_Cause_UNKNOWN;
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    *Ref_enuResetCause = RCC_Reset_Cause_UNKNOWN;
     u8 Loc_u8BitPosition = RCC_CSR_ResetCauseStartBit;
     u32 Loc_u32RCC_CSR = RCC_reg->RCC_CSR;
     while (Loc_u8BitPosition <= RCC_CSR_ResetCauseEndBit)
@@ -474,11 +510,11 @@ RCC_ResetCause_t RCC_enuGetResetCause()
         u8 Loc_u8TempFlag = Get_bit(Loc_u32RCC_CSR, Loc_u8BitPosition);
         if (Loc_u8TempFlag)
         {
-            Loc_enuResetCause = (RCC_ResetCause_t)Loc_u8BitPosition;
+            *Ref_enuResetCause = (RCC_ResetCause_t)Loc_u8BitPosition;
             break;
         }
         Loc_u8BitPosition++;
     }
     Set_Bit(RCC_reg->RCC_CSR, RCC_CSR_RMVF);
-    return Loc_enuResetCause;
+    return Loc_enuRCC_Error_Status;
 }

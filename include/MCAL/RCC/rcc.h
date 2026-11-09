@@ -12,7 +12,8 @@ typedef enum
     RCC_CLKDisabled,
     RCC_PLLEnabled,
     RCC_InvalidPLLDivisiors,
-    RCC_PLLSRCDisabled
+    RCC_PLLSRCDisabled,
+    RCC_InvalidPtr
 } RCC_Error_Status_t;
 
 typedef enum
@@ -156,11 +157,11 @@ RCC_Error_Status_t RCC_enuCTRLPeripheral(Peripheral_t Copy_enuPeripheral, Periph
 // 3
 RCC_Error_Status_t RCC_enuConfigurePLL(PLL_Config_t *Copy_strPLLConfig);
 // 9
-CLK_Type_t RCC_enuGetSysCLK();
+RCC_Error_Status_t RCC_enuGetSysCLK(CLK_Type_t * Ref_enuCLKType);
 // 6
-u32 RCC_u32GetSysCLKFreq();
+RCC_Error_Status_t RCC_enuGetSysCLKFreq(u32 * Ref_u32Freq);
 // 7
-RCC_ResetCause_t GetRCC_enuResetCause();
+RCC_Error_Status_t GetRCC_enuResetCause(RCC_ResetCause_t * Ref_enuResetCause);
 // 8
-CLK_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType);
+RCC_Error_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType,CLK_Status_t* Ref_enuCLKStatus);
 #endif

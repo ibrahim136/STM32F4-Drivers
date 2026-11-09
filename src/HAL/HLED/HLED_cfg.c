@@ -51,5 +51,12 @@ const HLED_cfg_t HLED_cfg[NUM_OF_LED] =
             .PIN = PIN7,
             .PIN_Speed = Low_Speed,
             .Active_State = Active_HIGH,
-            .PIN_Type = Push_Pull}
+            .PIN_Type = Push_Pull},
+        [LED_BUILTIN_PINC13] = {
+            .PORT = GPIO_PORTC,
+            .PIN = PIN13,
+            .PIN_Speed = Low_Speed,
+            .Active_State = Active_LOW,
+            .PIN_Type = Push_Pull
+        }
     };

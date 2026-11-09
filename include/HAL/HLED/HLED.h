@@ -2,7 +2,7 @@
 #define _HLED_H_
 
 #include "GPIO.h"
-
+#include "HLED_cfg.h"
 typedef enum
 {
     HLED_OK,
