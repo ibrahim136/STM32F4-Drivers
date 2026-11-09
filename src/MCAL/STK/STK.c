@@ -92,6 +92,7 @@ STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
     }
     else
     {
+        Clear_Bit(STK_reg->STK_CTRL, STK_CTRL_ENABLE);
         STK_u32RequiredTime = Copy_u32TimeMs;
         STK_u32TickCounter = 0;
         u32 Loc_u32TickFreq = STK_u32GetSysTickFreq();
@@ -99,6 +100,7 @@ STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
         STK_reg->STK_LOAD = Ticks_Per_1ms - 1;
         Clear_reg(STK_reg->STK_VAL);
         Set_Bit(STK_reg->STK_CTRL, STK_CTRL_TICKINT);
+        Set_Bit(STK_reg->STK_CTRL, STK_CTRL_ENABLE);
     }
     return Loc_enuErrorStatus;
 }
