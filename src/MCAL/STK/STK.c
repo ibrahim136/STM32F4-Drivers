@@ -8,6 +8,10 @@
 static STK_Cbf_t STK_pfCallback = nullptr;
 
 
+static u32 STK_u32RequiredTime = 0; 
+static u32 STK_u32TickCounter = 0;
+
+
 static inline u32 STK_u32GetSysTickFreq(void)
 {
     u32 Loc_u32SysFreq = 0;
@@ -66,9 +70,15 @@ STK_Error_Status_t STK_enuSetCbf(STK_Cbf_t Copy_pfCallback)
 void SysTick_Handler(void)
 {
     (void)STK_reg->STK_CTRL;
-    if (STK_pfCallback != nullptr)
+    STK_u32TickCounter++;
+    if (STK_u32TickCounter == STK_u32RequiredTime)
     {
-        STK_pfCallback();
+        STK_u32TickCounter = 0;
+
+        if (STK_pfCallback != nullptr)
+        {
+            STK_pfCallback();
+        }
     }
 }
 
@@ -82,13 +92,12 @@ STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
     }
     else
     {
+        STK_u32RequiredTime = Copy_u32TimeMs;
+        STK_u32TickCounter = 0;
         u32 Loc_u32TickFreq = STK_u32GetSysTickFreq();
-
-        u32 Total_Ticks = (Copy_u32TimeMs * (Loc_u32TickFreq / 1000));
-
-        STK_reg->STK_LOAD = Total_Ticks - 1;
+        u32 Ticks_Per_1ms = (Loc_u32TickFreq / 1000);
+        STK_reg->STK_LOAD = Ticks_Per_1ms - 1;
         Clear_reg(STK_reg->STK_VAL);
-
         Set_Bit(STK_reg->STK_CTRL, STK_CTRL_TICKINT);
     }
     return Loc_enuErrorStatus;
