@@ -116,7 +116,7 @@ STK_Error_Status_t STK_enuDelay_ms(u32 Copy_u32DelayMs)
     else
     {
         u32 Loc_u32TickFreq = STK_u32GetSysTickFreq();
-        u32 Ticks_Per_1ms = (Loc_u32TickFreq / 1000);
+        u32 Ticks_Per_1ms = Ticks_per_ms(Loc_u32TickFreq);
 
         STK_reg->STK_LOAD = Ticks_Per_1ms - 1;
         Clear_reg(STK_reg->STK_VAL);
@@ -144,7 +144,7 @@ STK_Error_Status_t STK_enuDelay_us(u32 Copy_u32DelayUs)
     else
     {
         u32 Loc_u32TickFreq = STK_u32GetSysTickFreq();
-        u32 Ticks_Per_1us = (Loc_u32TickFreq / 1000000);
+        u32 Ticks_Per_1us = Ticks_per_us(Loc_u32TickFreq);
 
         STK_reg->STK_LOAD = Ticks_Per_1us - 1;
         Clear_reg(STK_reg->STK_VAL);

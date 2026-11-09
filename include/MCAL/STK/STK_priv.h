@@ -35,6 +35,7 @@ typedef struct
 #define STK_CALIB_NOREF 31
 #define STK_CALIB_TENMS_MASK (0xFFFFFFFUL << STK_CALIB_TENMS)
 
-
+#define Ticks_per_ms(freq) (freq/1000)
+#define Ticks_per_us(freq) (freq/1000000)
 
 #endif
