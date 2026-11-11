@@ -3,7 +3,7 @@
 #include "STK.h"
 #include "HLED.h"
 
-#define TEST_MODE  2
+#define TEST_MODE 2
 
 void App_ToggleLED(void)
 {
@@ -12,14 +12,16 @@ void App_ToggleLED(void)
 
 int main(void)
 {
-    RCC_enuCLKControl(HSI, CLK_Enable);
-    RCC_enuSelectSysCLK(HSI);
-    
+    PLL_Config_t Loc_enuPLLConfig = {16, 336, 4, HSI, 7};
+    RCC_enuConfigurePLL(&Loc_enuPLLConfig);
+    RCC_enuCLKControl(PLL, CLK_Enable);
+    RCC_enuSelectSysCLK(PLL);
+
     STK_enuInit();
     HLED_enuInit();
 
 #if TEST_MODE == 1
-    while(1)
+    while (1)
     {
         App_ToggleLED();
         STK_enuDelay_ms(1000);
@@ -27,12 +29,11 @@ int main(void)
 
 #elif TEST_MODE == 2
     STK_enuSetCbf(App_ToggleLED);
-    STK_enuNotify_on_ms(1000);
+    STK_enuNotify_on_us(1000000);
     STK_enuStart();
 
-    while(1)
+    while (1)
     {
-        
     }
 #endif
 

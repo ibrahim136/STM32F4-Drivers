@@ -202,6 +202,7 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
         Set_Mask(RCC_reg->RCC_CFGR, Loc_u8targetSWValue << RCC_CFGR_SW);
         while ((RCC_reg->RCC_CFGR & RCC_CFGR_SWS_MASK) != (Loc_u8targetSWValue << RCC_CFGR_SWS) && --Loc_u32TimeOut)
             ;
+            
         if (Loc_u32TimeOut == 0)
         {
             Loc_enuRCC_Error_Status = RCC_Timeout;

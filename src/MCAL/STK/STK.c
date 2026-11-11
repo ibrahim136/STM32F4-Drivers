@@ -71,9 +71,9 @@ void SysTick_Handler(void)
 {
     (void)STK_reg->STK_CTRL;
     STK_u32TickCounter++;
-    if (STK_u32TickCounter == STK_u32RequiredTime)
+    if (STK_u32TickCounter % STK_u32RequiredTime == 0)
     {
-        STK_u32TickCounter = 0;
+        //STK_u32TickCounter = 0;
 
         if (STK_pfCallback != nullptr)
         {
@@ -85,7 +85,7 @@ void SysTick_Handler(void)
 STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
 {
     STK_Error_Status_t Loc_enuErrorStatus = STK_OK;
-
+    
     if (Copy_u32TimeMs == 0)
     {
         Loc_enuErrorStatus = STK_InvalidTime;
@@ -104,11 +104,31 @@ STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
     }
     return Loc_enuErrorStatus;
 }
+STK_Error_Status_t STK_enuNotify_on_us(u32 Copy_u32TimeUs)
+{
+    STK_Error_Status_t Loc_STK_Error_Status = STK_OK;
+    if (Copy_u32TimeUs == 0)
+    {
+        Loc_STK_Error_Status = STK_InvalidTime;
+    }
+    else
+    {
+        Clear_Bit(STK_reg->STK_CTRL,STK_CTRL_ENABLE);
+        STK_u32RequiredTime = Copy_u32TimeUs;
+
+        u32 loc = Ticks_per_us(STK_u32GetSysTickFreq())-1;
+        STK_reg->STK_LOAD = loc;
+        Clear_reg(STK_reg->STK_VAL);
+        Set_Bit(STK_reg->STK_CTRL,STK_CTRL_TICKINT);
+        Set_Bit(STK_reg->STK_CTRL,STK_CTRL_ENABLE);
+    }
+    return Loc_STK_Error_Status;
+}
 
 STK_Error_Status_t STK_enuDelay_ms(u32 Copy_u32DelayMs)
 {
     STK_Error_Status_t Loc_enuErrorStatus = STK_OK;
-
+    
     if (Copy_u32DelayMs == 0)
     {
         Loc_enuErrorStatus = STK_InvalidTime;

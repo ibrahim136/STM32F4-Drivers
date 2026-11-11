@@ -25,6 +25,7 @@ STK_Error_Status_t STK_enuDelay_us(u32 Copy_u32DelayUs);
 
 
 STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs);
+STK_Error_Status_t STK_enuNotify_on_us(u32 Copy_u32TimeUs);
 STK_Error_Status_t STK_enuSetCbf(STK_Cbf_t Copy_pfCallback);
 
 #endif
