@@ -8,8 +8,8 @@
 static STK_Cbf_t STK_pfCallback = nullptr;
 
 
-static u32 STK_u32RequiredTime = 0; 
-static u32 STK_u32TickCounter = 0;
+static u64 STK_u32RequiredTime = 0; 
+static u64 STK_u32TickCounter = 0;
 
 
 static inline u32 STK_u32GetSysTickFreq(void)
@@ -82,7 +82,7 @@ void SysTick_Handler(void)
     }
 }
 
-STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
+STK_Error_Status_t STK_enuNotify_on_ms(u64 Copy_u32TimeMs)
 {
     STK_Error_Status_t Loc_enuErrorStatus = STK_OK;
     
@@ -104,7 +104,7 @@ STK_Error_Status_t STK_enuNotify_on_ms(u32 Copy_u32TimeMs)
     }
     return Loc_enuErrorStatus;
 }
-STK_Error_Status_t STK_enuNotify_on_us(u32 Copy_u32TimeUs)
+STK_Error_Status_t STK_enuNotify_on_us(u64 Copy_u32TimeUs)
 {
     STK_Error_Status_t Loc_STK_Error_Status = STK_OK;
     if (Copy_u32TimeUs == 0)

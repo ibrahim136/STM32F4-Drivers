@@ -12,10 +12,10 @@ void App_ToggleLED(void)
 
 int main(void)
 {
-    PLL_Config_t Loc_enuPLLConfig = {16, 336, 4, HSI, 7};
-    RCC_enuConfigurePLL(&Loc_enuPLLConfig);
-    RCC_enuCLKControl(PLL, CLK_Enable);
-    RCC_enuSelectSysCLK(PLL);
+    //PLL_Config_t Loc_enuPLLConfig = {16, 336, 4, HSI, 7};
+    //RCC_enuConfigurePLL(&Loc_enuPLLConfig);
+    RCC_enuCLKControl(HSE, CLK_Enable);
+    RCC_enuSelectSysCLK(HSE);
 
     STK_enuInit();
     HLED_enuInit();
@@ -29,7 +29,7 @@ int main(void)
 
 #elif TEST_MODE == 2
     STK_enuSetCbf(App_ToggleLED);
-    STK_enuNotify_on_us(1000000);
+    STK_enuNotify_on_ms(1000);
     STK_enuStart();
 
     while (1)
