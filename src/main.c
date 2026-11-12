@@ -2,40 +2,30 @@
 #include "rcc.h"
 #include "STK.h"
 #include "HLED.h"
+#include "Sched.h"
 
 #define TEST_MODE 2
 
-void App_ToggleLED(void)
+void ToggleLED0(void)
 {
-    HLED_enuToggle(LED_BUILTIN_PINC13);
+    HLED_enuToggle(PINA0);
+}
+
+void ToggleLED1(void)
+{
+    HLED_enuToggle(PINA1);
 }
 
 int main(void)
 {
-    //PLL_Config_t Loc_enuPLLConfig = {16, 336, 4, HSI, 7};
-    //RCC_enuConfigurePLL(&Loc_enuPLLConfig);
-    RCC_enuCLKControl(HSE, CLK_Enable);
-    RCC_enuSelectSysCLK(HSE);
-
-    STK_enuInit();
+    RCC_enuCLKControl(HSI,CLK_Enable);
+    RCC_enuSelectSysCLK(HSI);
     HLED_enuInit();
+    Sched_enuInit();
+    Sched_Runnable_t r0 = {.p2f = ToggleLED0 , .CyclicTime_ms=900,.periorty=0,.first_delay=0};
+    Sched_Runnable_t r1 = {.p2f = ToggleLED1 , .CyclicTime_ms=300,.periorty=1,.first_delay=3000};
 
-#if TEST_MODE == 1
-    while (1)
-    {
-        App_ToggleLED();
-        STK_enuDelay_ms(1000);
-    }
-
-#elif TEST_MODE == 2
-    STK_enuSetCbf(App_ToggleLED);
-    STK_enuNotify_on_ms(1000);
-    STK_enuStart();
-
-    while (1)
-    {
-    }
-#endif
-
-    return 0;
+    Sched_enuAddRunnable(&r0);
+    Sched_enuAddRunnable(&r1);
+    Sched_Start();
 }

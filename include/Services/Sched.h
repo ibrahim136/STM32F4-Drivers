@@ -24,6 +24,7 @@ typedef struct
     u64 first_delay;
 }Sched_Runnable_t;
 
+Sched_Error_Status_t Sched_enuInit(void);
 Sched_Error_Status_t Sched_enuAddRunnable(Sched_Runnable_t * Copy_strRunnable);
 Sched_Error_Status_t Sched_enuRemoveRunnable(Sched_Runnable_t *Ref_strRunnable);
 Sched_Error_Status_t Sched_Start(void);
