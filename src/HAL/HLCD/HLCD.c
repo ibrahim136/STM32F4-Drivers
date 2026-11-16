@@ -16,6 +16,27 @@ typedef enum
 
 typedef enum
 {
+    Display_ON_OFF_Wait_1,
+    Display_ON_OFF_Wait_2,
+    Display_ON_OFF_DONE
+} Display_ON_OFF_Status_t;
+
+typedef enum
+{
+    Display_Clear_Wait_1,
+    Display_Clear_Wait_2,
+    Display_Clear_DONE
+} Display_Clear_Status_t;
+
+typedef enum
+{
+    Entry_Mode_Wait_1,
+    Entry_Mode_Wait_2,
+    Entry_Mode_DONE
+} Entry_Mode_Status_t;
+
+typedef enum
+{
     No_Req,
     Init_Pins,
     Function_Set,
@@ -25,6 +46,7 @@ typedef enum
     Display_Clear,
     Display_Clear_Wait,
     Entry_Mode_Set,
+    Entry_Mode_Set_Wait,
     Init_Done
 } HLCD_InitSeq_t;
 
@@ -37,7 +59,12 @@ typedef enum
 static HLCD_Busy_t HLCD_State = Available;
 
 HLCD_InitSeq_t HLCD_InitSeq = No_Req;
+
 Function_Set_Instruction_Status_t HLCD_FunctionSetInstructionStatus = Function_Set_Wait_1;
+Display_ON_OFF_Status_t HLCD_DisplayOnOffStatus = Display_ON_OFF_Wait_1;
+Display_Clear_Status_t HLCD_DisplayClearStatus = Display_ON_OFF_Wait_1;
+Entry_Mode_Status_t HLCD_EntryModeStatus = Entry_Mode_Wait_1;
+
 extern const HLCD_PIN_cfg_t HLCD_cfg[NUM_OF_Control_Data_PINs];
 static void HLCD_Runnable(void);
 static Sched_Runnable_t SchedRunnable = {.p2f = HLCD_Runnable, .CyclicTime_ms = 2, .first_delay = 30};
@@ -246,6 +273,66 @@ static inline HLCD_Error_Status_t HLCD_enuFunctionSet(Function_Set_Instruction_S
     return Loc_enuHLCD_Error_Status;
 }
 
+static inline HLCD_Error_Status_t HLCD_enuDisplayOnOff(Display_ON_OFF_Status_t *Ref_enuDisplayOnOff)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+#if BIT_MODE == _8_BIT_MODE
+    Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_8_BIT);
+    *Ref_enuDisplayOnOff = Display_ON_OFF_DONE;
+#elif BIT_MODE == _4_BIT_MODE
+    switch (*Ref_enuDisplayOnOff)
+    {
+    case Display_ON_OFF_Wait_1:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_4_BIT_1);
+        (*Ref_enuDisplayOnOff)++;
+    default:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_4_BIT_2);
+        (*Ref_enuDisplayOnOff)++;
+    }
+#endif
+    return Loc_enuHLCD_Error_Status;
+}
+
+static inline HLCD_Error_Status_t HLCD_enuDisplayClear(Display_Clear_Status_t *Ref_enuDisplayClear)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+#if BIT_MODE == _8_BIT_MODE
+    Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_8_BIT);
+    *Ref_enuDisplayClear = Display_Clear_DONE;
+#elif BIT_MODE == _4_BIT_MODE
+    switch (*Ref_enuDisplayClear)
+    {
+    case Display_Clear_Wait_1:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_4_BIT_1);
+        (*Ref_enuDisplayClear)++;
+    default:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Display_On_Off_4_BIT_2);
+        (*Ref_enuDisplayClear)++;
+    }
+#endif
+    return Loc_enuHLCD_Error_Status;
+}
+
+static inline HLCD_Error_Status_t HLCD_enuEntryMode(Entry_Mode_Status_t *Ref_enuEntryMode)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+#if BIT_MODE == _8_BIT_MODE
+    Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Entry_Mode_8_Bit);
+    *Ref_enuEntryMode = Entry_Mode_DONE;
+#elif BIT_MODE == _4_BIT_MODE
+    switch (*Ref_enuEntryMode)
+    {
+    case Display_Clear_Wait_1:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Entry_Mode_4_Bit_1);
+        (*Ref_enuEntryMode)++;
+    default:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Entry_Mode_4_Bit_2);
+        (*Ref_enuEntryMode)++;
+    }
+#endif
+    return Loc_enuHLCD_Error_Status;
+}
+
 static void HLCD_Runnable(void)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
@@ -261,10 +348,10 @@ static void HLCD_Runnable(void)
             HLCD_InitSeq++;
             break;
         case Function_Set:
-            if (Loc_enuHLCD_Error_Status == HLCD_OK)
-                Loc_enuHLCD_Error_Status = HLCD_enuFunctionSet(&HLCD_FunctionSetInstructionStatus);
+            Loc_enuHLCD_Error_Status = HLCD_enuFunctionSet(&HLCD_FunctionSetInstructionStatus);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
                 HLCD_InitSeq++;
+            break;
         case Function_Set_Wait:
             Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(E, PIN_LOW);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
@@ -278,13 +365,71 @@ static void HLCD_Runnable(void)
                     HLCD_InitSeq--;
                 }
             }
+            break;
+        case Display_ON_OFF:
+            Loc_enuHLCD_Error_Status = HLCD_enuDisplayOnOff(&HLCD_DisplayOnOffStatus);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                HLCD_InitSeq++;
+            break;
+        case Display_ON_OFF_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (HLCD_DisplayOnOffStatus == Display_ON_OFF_DONE)
+                {
+                    HLCD_InitSeq++;
+                }
+                else
+                {
+                    HLCD_InitSeq--;
+                }
+            }
+            break;
+        case Display_Clear:
+            Loc_enuHLCD_Error_Status = HLCD_enuDisplayClear(&HLCD_DisplayClearStatus);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                HLCD_InitSeq++;
+            break;
+        case Display_Clear_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (HLCD_DisplayClearStatus == Display_Clear_DONE)
+                {
+                    HLCD_InitSeq++;
+                }
+                else
+                {
+                    HLCD_InitSeq--;
+                }
+            }
+        case Entry_Mode_Set:
+            Loc_enuHLCD_Error_Status = HLCD_enuEntryMode(&HLCD_EntryModeStatus);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                HLCD_InitSeq++;
+            break;
+        case Entry_Mode_Set_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (HLCD_EntryModeStatus == Entry_Mode_DONE)
+                {
+                    HLCD_InitSeq++;
+                }
+                else
+                {
+                    HLCD_InitSeq--;
+                }
+            }
+            break;
         default:
+            
             break;
         }
     }
 }
 
-HLCD_Error_Status_t HLCD_AsyncInit(u8 Copy_u8Priority)
+HLCD_Error_Status_t HLCD_enuInit(u8 Copy_u8Priority)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     if (HLCD_State == Busy)

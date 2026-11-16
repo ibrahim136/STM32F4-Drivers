@@ -29,4 +29,6 @@ typedef struct
     GPIO_PIN_Number_t PIN;
 } HLCD_PIN_cfg_t;
 
+HLCD_Error_Status_t HLCD_enuInit(u8 Copy_u8Priority);
+
 #endif

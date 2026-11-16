@@ -16,6 +16,31 @@
 
 #define Dots_Mode _5x7_dots
 
+#define DisplayOff 0
+#define DisplayOn 1
+
+#define DisplayOnOffMode DisplayOn
+
+#define CursorOn 1
+#define CursorOff 0
+
+#define Cursor CursorOn
+
+#define BlinkOn 1
+#define BlinkOff 1
+
+#define Blink BlinkOn
+
+#define Decrease_Cursor 0
+#define Increase_Cursor 1
+
+#define Move_Cursor Increase_Cursor
+
+#define ShiftScreenOn 1
+#define ShiftScreenOff 0
+
+#define ShiftCursorMode ShiftScreenOn
+
 typedef enum{
     RS,
     RW,
