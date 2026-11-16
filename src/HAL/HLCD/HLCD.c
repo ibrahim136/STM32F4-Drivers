@@ -1,7 +1,18 @@
 #include "HLCD.h"
 #include "HLCD_cfg.h"
+#include "HLCD_priv.h"
 #include "rcc.h"
 #include "Bit_math.h"
+#include "Sched.h"
+
+typedef enum
+{
+    Function_Set_Wait_1,
+    Function_Set_Wait_2,
+    Function_Set_Wait_3,
+    Function_Set_DONE,
+
+} Function_Set_Instruction_Status_t;
 
 typedef enum
 {
@@ -17,7 +28,19 @@ typedef enum
     Init_Done
 } HLCD_InitSeq_t;
 
+typedef enum
+{
+    Available,
+    Busy
+} HLCD_Busy_t;
+
+static HLCD_Busy_t HLCD_State = Available;
+
+HLCD_InitSeq_t HLCD_InitSeq = No_Req;
+Function_Set_Instruction_Status_t HLCD_FunctionSetInstructionStatus = Function_Set_Wait_1;
 extern const HLCD_PIN_cfg_t HLCD_cfg[NUM_OF_Control_Data_PINs];
+static void HLCD_Runnable(void);
+static Sched_Runnable_t SchedRunnable = {.p2f = HLCD_Runnable, .CyclicTime_ms = 2, .first_delay = 30};
 
 static const Peripheral_t GPIOS_Pheripheral_Enable[GPIO_Count] = {
     Peripheral_GPIOA,
@@ -200,5 +223,80 @@ static inline HLCD_Error_Status_t HLCD_enuSendCommand(u8 Copy_u8Command)
     return Loc_enuHLCD_Error_Status;
 }
 
+static inline HLCD_Error_Status_t HLCD_enuFunctionSet(Function_Set_Instruction_Status_t *Ref_enuFunctionSetInstructionWait)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+#if BIT_MODE == _8_BIT_MODE
+    Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Function_Set_8_BIT);
+    *Ref_enuFunctionSetInstructionWait = Function_Set_DONE;
+#elif BIT_MODE == _4_BIT_MODE
+    switch (*Ref_enuFunctionSetInstructionWait)
+    {
+    case Function_Set_Wait_1:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Function_Set_4_BIT_1);
+        (*Ref_enuFunctionSetInstructionWait)++;
+    case Function_Set_Wait_2:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Function_Set_4_BIT_2);
+        (*Ref_enuFunctionSetInstructionWait)++;
+    default:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Function_Set_4_BIT_3);
+        (*Ref_enuFunctionSetInstructionWait)++;
+    }
+#endif
+    return Loc_enuHLCD_Error_Status;
+}
 
+static void HLCD_Runnable(void)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    if (HLCD_InitSeq == Init_Done)
+    {
+    }
+    else
+    {
+        switch (HLCD_InitSeq)
+        {
+        case Init_Pins:
+            HLCD_enuInitPINs();
+            HLCD_InitSeq++;
+            break;
+        case Function_Set:
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                Loc_enuHLCD_Error_Status = HLCD_enuFunctionSet(&HLCD_FunctionSetInstructionStatus);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                HLCD_InitSeq++;
+        case Function_Set_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (HLCD_FunctionSetInstructionStatus == Function_Set_DONE)
+                {
+                    HLCD_InitSeq++;
+                }
+                else
+                {
+                    HLCD_InitSeq--;
+                }
+            }
+        default:
+            break;
+        }
+    }
+}
 
+HLCD_Error_Status_t HLCD_AsyncInit(u8 Copy_u8Priority)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    if (HLCD_State == Busy)
+    {
+        Loc_enuHLCD_Error_Status = HLCD_Busy;
+    }
+    else
+    {
+        SchedRunnable.periorty = Copy_u8Priority;
+        Sched_enuAddRunnable(&SchedRunnable);
+        HLCD_InitSeq = Init_Pins;
+        HLCD_State = Busy;
+    }
+    return Loc_enuHLCD_Error_Status;
+}

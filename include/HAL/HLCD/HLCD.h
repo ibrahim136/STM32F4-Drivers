@@ -10,6 +10,7 @@ typedef enum
     HLCD_InvalidCFG,
     HLCD_InvalidPIN,
     HLCD_InvalidCommand,
+    HLCD_Busy,
 
     HLCD_RCC_Timeout,
     HLCD_RCC_InvalidParam,

@@ -4,7 +4,17 @@
 #define _8_BIT_MODE 0
 #define _4_BIT_MODE 1
 
-#define BIT_MODE _4_BIT_MODE
+#define BIT_MODE _8_BIT_MODE
+
+#define _1_Line_MODE 0
+#define _2_Line_MODE 1
+
+#define Number_Of_Lines _2_Line_MODE
+
+#define _5x7_dots 0
+#define _5x11_dots 1
+
+#define Dots_Mode _5x7_dots
 
 typedef enum{
     RS,
