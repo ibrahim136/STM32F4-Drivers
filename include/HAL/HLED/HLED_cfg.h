@@ -1,7 +1,8 @@
 #ifndef _HLED_CFG_H_
 #define _HLED_CFG_H_
 
-typedef enum{
+typedef enum
+{
     PINA0,
     PINA1,
     PINA2,
@@ -12,7 +13,6 @@ typedef enum{
     PINA7,
     LED_BUILTIN_PINC13,
     NUM_OF_LED
-}HLED_LEDS_t;
-
+} HLED_LEDS_t;
 
 #endif
