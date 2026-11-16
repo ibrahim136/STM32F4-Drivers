@@ -5,7 +5,7 @@
 
 extern const HLED_cfg_t HLED_cfg[];
 
-const Peripheral_t GPIOS_Pheripheral_Enable[GPIO_Count] = {
+static const Peripheral_t GPIOS_Pheripheral_Enable[GPIO_Count] = {
     Peripheral_GPIOA,
     Peripheral_GPIOB,
     Peripheral_GPIOC,
@@ -67,7 +67,7 @@ HLED_Error_Status_t HLED_enuInit()
     RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
     HLED_Error_Status_t Loc_enuHLED_Error_Status = HLED_OK;
 
-    for (int i = 0; i < NUM_OF_LED; i++)
+    for (u8 i = 0; i < NUM_OF_LED; i++)
     {
         Loc_enuRCC_Error_Status = RCC_enuCTRLPeripheral(GPIOS_Pheripheral_Enable[HLED_cfg[i].PORT], Peripheral_Enable);
         if (Loc_enuRCC_Error_Status != RCC_OK)
@@ -90,6 +90,7 @@ HLED_Error_Status_t HLED_enuInit()
         if (Loc_enuGPIO_Error_Status != GPIO_OK)
         {
             Loc_enuHLED_Error_Status = HLED_enuGPIOErrorToHLEDError(Loc_enuGPIO_Error_Status);
+            break;
         }
     }
 

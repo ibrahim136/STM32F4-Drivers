@@ -2,12 +2,14 @@
 #define _HSwitch_H_
 
 #include "GPIO.h"
-
+#include "HSwitch_cfg.h"
 typedef enum
 {
     HSwitch_OK,
+    HSwitch_InvalidParam,
+    HSwitch_InvalidSwitch,
+    HSwitch_InvalidPtr,
 
-    
     HSwitch_RCC_Timeout,
     HSwitch_RCC_InvalidParam,
     HSwitch_RCC_ClockInUse,
@@ -22,9 +24,18 @@ typedef enum
 
 typedef enum
 {
-    Pressed_High,
-    Pressed_Low
+    Pressed_Low,
+    Pressed_High
 }Pressed_State_t;
+
+typedef enum
+{
+    Unknown,
+    Pre_Pressed,
+    Pressed,
+    Pre_Released,
+    Released
+}Switch_State_t;
 
 typedef struct{
     GPIO_Port_t PORT;
@@ -33,7 +44,9 @@ typedef struct{
     Pressed_State_t Pressed_State;
 }HSwitch_cfg_t;
 
-HSwitch_Error_Status_t HSwitch_enuInit();
+HSwitch_Error_Status_t HSwitch_enuInit(u8 Copy_u8Periorty);
+HSwitch_Error_Status_t HSwitch_enuReadState(HSwitch_Switches_t Copy_enuSwitch, Switch_State_t * Ref_enuSwitchState );
+
 
 
 
