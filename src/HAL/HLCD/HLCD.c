@@ -57,10 +57,6 @@ typedef enum
     Init_Done
 } HLCD_InitSeq_t;
 
-typedef enum{
-    
-}
-
 typedef enum
 {
     Available,
