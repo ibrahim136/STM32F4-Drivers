@@ -33,7 +33,7 @@ typedef enum
     Entry_Mode_Set,
     Entry_Mode_Set_Wait,
     Init_Done
-} HLCD_InitSeq_t;
+} HLCD_enuInitSeq_t;
 
 typedef enum
 {
@@ -43,7 +43,7 @@ typedef enum
 
 static HLCD_Busy_t HLCD_State[LCD_Count];
 
-HLCD_InitSeq_t HLCD_InitSeq[LCD_Count];
+HLCD_enuInitSeq_t HLCD_InitSeq[LCD_Count];
 
 static Two_Waits_t Two_Waits[LCD_Count];
 static Three_Waits_t Three_Waits[LCD_Count];
@@ -176,7 +176,7 @@ static inline HLCD_Error_Status_t HLCD_enuInitPINs(LCD_Numbers_t Copy_enuLCDNumb
             }
             if (i == E && !LCDs_Init_Conf[Copy_enuLCDNumber].DL)
             {
-                i=D3;
+                i = D3;
             }
         }
     }
@@ -209,12 +209,12 @@ static inline HLCD_Error_Status_t HLCD_enuPINCtrl(LCD_Numbers_t Copy_enuLCDNumbe
     return Loc_enuHLCD_Error_Status;
 }
 
-static inline HLCD_Error_Status_t HLCD_enuValidCommand(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Command)
+static inline HLCD_Error_Status_t HLCD_enuValid(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Command_Data)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     if (LCDs_Init_Conf[Copy_enuLCDNumber].DL == _4_BIT_MODE)
     {
-        if (Copy_u8Command > Full_4_bit_ones)
+        if (Copy_u8Command_Data > Full_4_bit_ones)
         {
             Loc_enuHLCD_Error_Status = HLCD_InvalidCommand;
         }
@@ -224,7 +224,7 @@ static inline HLCD_Error_Status_t HLCD_enuValidCommand(LCD_Numbers_t Copy_enuLCD
 
 static inline HLCD_Error_Status_t HLCD_enuSendCommand(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Command)
 {
-    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValidCommand(Copy_enuLCDNumber, Copy_u8Command);
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValid(Copy_enuLCDNumber, Copy_u8Command);
 
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
@@ -378,6 +378,76 @@ static inline HLCD_Error_Status_t HLCD_enuEntryMode(LCD_Numbers_t Copy_enuLCDNum
     return Loc_enuHLCD_Error_Status;
 }
 
+static inline HLCD_Error_Status_t HLCD_enuSendData(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Data)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValid(Copy_enuLCDNumber, Copy_u8Data);
+
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Copy_enuLCDNumber, RS, PIN_HIGH);
+    }
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Copy_enuLCDNumber, RW, PIN_LOW);
+    }
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Copy_enuLCDNumber, E, PIN_HIGH);
+    }
+
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+
+        for (u8 i = Data_Start_Index(LCDs_Init_Conf[Copy_enuLCDNumber].DL); i < NUM_OF_Control_Data_PINs; i++)
+        {
+            u8 Loc_u8TempBit = Get_Lastbit(Copy_u8Data);
+            switch (Loc_u8TempBit)
+            {
+            case 0:
+                Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Copy_enuLCDNumber, i, PIN_LOW);
+                break;
+            default:
+                Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Copy_enuLCDNumber, i, PIN_HIGH);
+                break;
+            }
+            if (Loc_enuHLCD_Error_Status != HLCD_OK)
+            {
+                break;
+            }
+            Copy_u8Data = Shift_Right_by_one(Copy_u8Data);
+        }
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
+static inline HLCD_Error_Status_t HLCD_enuSendChar(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Data, Two_Waits_t *Ref_enuTwo_Waits)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    u8 Loc_u8Command = Copy_u8Data;
+    switch (LCDs_Init_Conf[Copy_enuLCDNumber].DL)
+    {
+    case _8_BIT_MODE:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendData(Copy_enuLCDNumber, Loc_u8Command);
+        *Ref_enuTwo_Waits = Wait2_Done;
+        break;
+    default:
+        switch (*Ref_enuTwo_Waits)
+        {
+        case Wait2_1:
+            Loc_u8Command = Get_HigherNipple(Loc_u8Command);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendData(Copy_enuLCDNumber, Loc_u8Command);
+            (*Ref_enuTwo_Waits)++;
+            break;
+        default:
+            Loc_u8Command = Get_LowerNipple(Loc_u8Command);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendData(Copy_enuLCDNumber, Loc_u8Command);
+            (*Ref_enuTwo_Waits)++;
+            break;
+        }
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
 typedef struct
 {
     LCD_Numbers_t LCD_no;
@@ -388,12 +458,99 @@ static LCD_Periority_t LCD_Periority[LCD_Count];
 static u8 LCD_CNT_for_Runnables = 0;
 static u8 exisit_LCDs;
 
+typedef enum
+{
+    No_req,
+    Write_String,
+    Write_String_Wait,
+    Write_Data,
+    Write_Data_Wait,
+    // Write_Cmd,
+    // Write_Cmd_Wait,
+} HLCD_enuDataSeq_t;
+
+HLCD_enuDataSeq_t HLCD_DataSeq[LCD_Count];
+static u8 String_Index[LCD_Count];
+static u8 *RequestedString[LCD_Count];
+
+HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    if (HLCD_State[Copy_enuLCDNumber] != Available)
+        Loc_enuHLCD_Error_Status = HLCD_Busy;
+    if (Loc_enuHLCD_Error_Status == HLCD_OK && HLCD_InitSeq[Copy_enuLCDNumber] != Init_Done)
+        Loc_enuHLCD_Error_Status = HLCD_LCDNotInitilized;
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        RequestedString[Copy_enuLCDNumber] = Copy_u8String;
+        HLCD_DataSeq[Copy_enuLCDNumber] = Write_String;
+        HLCD_State[Copy_enuLCDNumber] = HLCD_Busy;
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
 static void HLCD_Runnable(void)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     LCD_Numbers_t Loc_LCDnumber = LCD_Periority[LCD_CNT_for_Runnables].LCD_no;
     if (HLCD_InitSeq[Loc_LCDnumber] == Init_Done)
     {
+        switch (HLCD_DataSeq[Loc_LCDnumber])
+        {
+        case Write_String:
+            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]], &Two_Waits[Loc_LCDnumber]);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                HLCD_DataSeq[Loc_LCDnumber]++;
+                String_Index[Loc_LCDnumber]++;
+            }
+            break;
+        case Write_String_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Loc_LCDnumber, E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (Two_Waits[Loc_LCDnumber] == Wait2_Done)
+                {
+                    Two_Waits[Loc_LCDnumber] = Wait2_1;
+                    if (RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]] == '\0')
+                    {
+                        HLCD_DataSeq[Loc_LCDnumber]++;
+                    }
+                    else
+                    {
+                        HLCD_DataSeq[Loc_LCDnumber]--;
+                    }
+                }
+                else
+                {
+                    HLCD_DataSeq[Loc_LCDnumber]--;
+                    String_Index[Loc_LCDnumber]--;
+                }
+            }
+            break;
+        case Write_Data:
+            //Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, 'a', &Two_Waits[Loc_LCDnumber]);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+                HLCD_DataSeq[Loc_LCDnumber]++;
+            break;
+        case Write_Data_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Loc_LCDnumber, E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (Two_Waits[Loc_LCDnumber] == Wait2_Done)
+                {
+                    Two_Waits[Loc_LCDnumber] = Wait2_1;
+                    HLCD_DataSeq[Loc_LCDnumber]++;
+                }
+                else
+                {
+                    HLCD_DataSeq[Loc_LCDnumber]--;
+                }
+            }
+            break;
+        default:
+            break;
+        }
     }
     else
     {
@@ -476,6 +633,7 @@ static void HLCD_Runnable(void)
                 {
                     Two_Waits[Loc_LCDnumber] = Wait2_1;
                     HLCD_InitSeq[Loc_LCDnumber]++;
+                    HLCD_State[Loc_LCDnumber] = Available;
                 }
                 else
                 {
@@ -484,7 +642,6 @@ static void HLCD_Runnable(void)
             }
             break;
         default:
-            HLCD_State[Loc_LCDnumber] = Available;
             break;
         }
     }

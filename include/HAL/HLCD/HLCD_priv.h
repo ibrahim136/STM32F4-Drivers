@@ -7,6 +7,7 @@
 
 #define Cylic_ms 2
 #define FirstDelay_ms 30
+#define MAX_Char
 
 #define Number_Of_Pins_to_cfg(DL) (7+DL*4)
 

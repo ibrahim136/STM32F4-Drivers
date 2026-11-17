@@ -14,6 +14,7 @@ typedef enum
     HLCD_InvalidLCDNumber,
     HLCD_AlreadyInitilized,
     HLCD_LCDLimit,
+    HLCD_LCDNotInitilized,
 
     HLCD_RCC_Timeout,
     HLCD_RCC_InvalidParam,
@@ -25,7 +26,8 @@ typedef enum
 
     HLCD_GPIO_InvalidParam,
     HLCD_Sched_InvalidPeriortyNumber,
-    HLCD_Sched_PeriortyNotFree
+    HLCD_Sched_PeriortyNotFree,
+
 } HLCD_Error_Status_t;
 
 typedef struct
@@ -35,5 +37,5 @@ typedef struct
 } HLCD_PIN_cfg_t;
 
 HLCD_Error_Status_t HLCD_enuInit(LCD_Numbers_t Copy_enuLCDNumber,u8 Copy_u8Priority);
-
+HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String);
 #endif
