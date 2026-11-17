@@ -29,10 +29,10 @@ const HLCD_PIN_cfg_t HLCD_PIN_cfg[LCD_Count][NUM_OF_Control_Data_PINs] =
             [D1] = {.PORT = GPIO_PORTA, .PIN = PIN9},
             [D2] = {.PORT = GPIO_PORTA, .PIN = PIN10},
             [D3] = {.PORT = GPIO_PORTA, .PIN = PIN11},
-            [D4] = {.PORT = GPIO_PORTA, .PIN = PIN12},
-            [D5] = {.PORT = GPIO_PORTA, .PIN = PIN13},
-            [D6] = {.PORT = GPIO_PORTC, .PIN = PIN13},
-            [D7] = {.PORT = GPIO_PORTC, .PIN = PIN14},
+            [D4] = {.PORT = GPIO_PORTB, .PIN = PIN8},
+            [D5] = {.PORT = GPIO_PORTB, .PIN = PIN9},
+            [D6] = {.PORT = GPIO_PORTB, .PIN = PIN10},
+            [D7] = {.PORT = GPIO_PORTB, .PIN = PIN12},
         }
 
 };
