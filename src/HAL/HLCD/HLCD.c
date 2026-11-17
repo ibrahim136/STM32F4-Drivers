@@ -489,6 +489,42 @@ HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Cop
     return Loc_enuHLCD_Error_Status;
 }
 
+static inline HLCD_Error_Status_t HLCD_ValidRow(Row_Number_t Copy_enuRow)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    switch (Copy_enuRow)
+    {
+        case 0 ... Row_Count-1:
+        break;
+        default:
+        Loc_enuHLCD_Error_Status = HLCD_InvalidRow;
+        break;
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
+static inline HLCD_Error_Status_t HLCD_ValidCol(Col_Number_t Copy_enuCol)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    switch (Copy_enuCol)
+    {
+        case 0 ... Col_Count-1:
+        break;
+        default:
+        Loc_enuHLCD_Error_Status = HLCD_InvalidRow;
+        break;
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
+HLCD_Error_Status_t HLCD_enuSetCursorPos(LCD_Numbers_t Copy_enuLCDNumber, Row_Number_t Copy_enuRow, Col_Number_t Copy_enuCol)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    u8 Loc_u8Command = 0x80;
+    Loc_u8Command |= (0x40 * (Copy_enuRow-1) );
+    return Loc_enuHLCD_Error_Status;
+}
+
 static void HLCD_Runnable(void)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;

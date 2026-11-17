@@ -4,6 +4,32 @@
 #include "GPIO.h"
 #include "HLCD_cfg.h"
 
+typedef enum{
+    Row_1,
+    Row_2,
+    Row_Count
+}Row_Number_t;
+
+typedef enum{
+    Col_1,
+    Col_2,
+    Col_3,
+    Col_4,
+    Col_5,
+    Col_6,
+    Col_7,
+    Col_8,
+    Col_9,
+    Col_10,
+    Col_11,
+    Col_12,
+    Col_13,
+    Col_14,
+    Col_15,
+    Col_16,
+    Col_Count
+}Col_Number_t;
+
 typedef enum
 {
     HLCD_OK,
@@ -15,6 +41,8 @@ typedef enum
     HLCD_AlreadyInitilized,
     HLCD_LCDLimit,
     HLCD_LCDNotInitilized,
+    HLCD_InvalidRow,
+    HLCD_InvalidCol,
 
     HLCD_RCC_Timeout,
     HLCD_RCC_InvalidParam,
