@@ -1,56 +1,71 @@
 #ifndef _HLCD_CFG_H_
 #define _HLCD_CFG_H_
 
-#define _8_BIT_MODE 0
-#define _4_BIT_MODE 1
+typedef enum{
+    _4_BIT_MODE,
+    _8_BIT_MODE
+}BIT_MODE_t;
 
-#define BIT_MODE _8_BIT_MODE
+typedef enum{
+    _1_Line_MODE,
+    _2_Line_MODE
+}Number_Of_Lines_t;
 
-#define _1_Line_MODE 0
-#define _2_Line_MODE 1
+typedef enum{
+    _5x7_dots,
+    _5x11_dots
+}Dots_Mode_t;
 
-#define Number_Of_Lines _2_Line_MODE
+typedef enum{
+    DisplayOff,
+    DisplayOn
+}DisplayOnOffMode_t;
 
-#define _5x7_dots 0
-#define _5x11_dots 1
+typedef enum{
+    CursorOff,
+    CursorOn
+}Cursor_t;
 
-#define Dots_Mode _5x7_dots
+typedef enum{
+    BlinkOff,
+    BlinkOn
+}Blink_t;
 
-#define DisplayOff 0
-#define DisplayOn 1
+typedef enum{
+    Decrease_Cursor,
+    Increase_Cursor
+}Move_Cursor_t;
 
-#define DisplayOnOffMode DisplayOn
+typedef enum{
+    ShiftScreenOff,
+    ShiftScreenOn
+}ShiftCursorMode_t;
 
-#define CursorOn 1
-#define CursorOff 0
+typedef struct {
+    const BIT_MODE_t DL;
+    Number_Of_Lines_t N;
+    Dots_Mode_t F;
+    DisplayOnOffMode_t D; 
+    Cursor_t C;
+    Blink_t B;
+    Move_Cursor_t I_D;
+    ShiftCursorMode_t S;
+}LCD_Init_cfg_t;
 
-#define Cursor CursorOn
-
-#define BlinkOn 1
-#define BlinkOff 1
-
-#define Blink BlinkOn
-
-#define Decrease_Cursor 0
-#define Increase_Cursor 1
-
-#define Move_Cursor Increase_Cursor
-
-#define ShiftScreenOn 1
-#define ShiftScreenOff 0
-
-#define ShiftCursorMode ShiftScreenOn
+typedef enum{
+    LCD_1,
+    LCD_2,
+    LCD_Count
+}LCD_Numbers_t;
 
 typedef enum{
     RS,
     RW,
     E,
-    #if BIT_MODE == _8_BIT_MODE
     D0,
     D1,
     D2,
     D3,
-    #endif
     D4,
     D5,
     D6,

@@ -1,7 +1,7 @@
 #include "Sched.h"
 #include "STK.h"
 
-#define Runnables_Count 100
+
 
 static Sched_Runnable_t *Sched_Runnables[Runnables_Count];
 static volatile u8 Is_Triggered =0;

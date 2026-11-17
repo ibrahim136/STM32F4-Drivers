@@ -3,6 +3,7 @@
 
 #include "STD_types.h"
 typedef void(*ptr2func)(void);
+#define Runnables_Count 100
 
 typedef enum
 {
