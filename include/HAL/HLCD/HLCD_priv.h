@@ -3,6 +3,8 @@
 #include "HLCD_cfg.h"
 #include "Bit_math.h"
 
+#define Data_Start_Index(DL) (7-DL*4)
+
 #define Cylic_ms 2
 #define FirstDelay_ms 30
 

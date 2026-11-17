@@ -149,7 +149,7 @@ static inline HLCD_Error_Status_t HLCD_enuInitPINs(LCD_Numbers_t Copy_enuLCDNumb
     }
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
-        for (u8 i = 0; i < Number_Of_Pins_to_cfg(LCDs_Init_Conf[Copy_enuLCDNumber].DL); i++)
+        for (u8 i = 0; i < NUM_OF_Control_Data_PINs; i++)
         {
             Loc_enuRCC_Error_Status = RCC_enuCTRLPeripheral(GPIOS_Pheripheral_Enable[HLCD_PIN_cfg[Copy_enuLCDNumber][i].PORT], Peripheral_Enable);
             if (Loc_enuRCC_Error_Status != RCC_OK)
@@ -174,6 +174,10 @@ static inline HLCD_Error_Status_t HLCD_enuInitPINs(LCD_Numbers_t Copy_enuLCDNumb
                 Loc_enuHLCD_Error_Status = HLCD_enuGPIOErrorToHLCDError(Loc_enuGPIO_Error_Status);
                 break;
             }
+            if (i == E && !LCDs_Init_Conf[Copy_enuLCDNumber].DL)
+            {
+                i=D3;
+            }
         }
     }
 
@@ -183,7 +187,7 @@ static inline HLCD_Error_Status_t HLCD_enuInitPINs(LCD_Numbers_t Copy_enuLCDNumb
 static inline HLCD_Error_Status_t HLCD_enuPINValid(LCD_Numbers_t Copy_enuLCDNumber, Control_Data_PINs_t Copy_enuPIN)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    if (Copy_enuPIN > Number_Of_Pins_to_cfg(LCDs_Init_Conf[Copy_enuLCDNumber].DL))
+    if (Copy_enuPIN > NUM_OF_Control_Data_PINs)
     {
         Loc_enuHLCD_Error_Status = HLCD_InvalidPIN;
     }
@@ -238,7 +242,7 @@ static inline HLCD_Error_Status_t HLCD_enuSendCommand(LCD_Numbers_t Copy_enuLCDN
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
 
-        for (u8 i = Data_Start_Index; i < Number_Of_Pins_to_cfg(LCDs_Init_Conf[Copy_enuLCDNumber].DL); i++)
+        for (u8 i = Data_Start_Index(LCDs_Init_Conf[Copy_enuLCDNumber].DL); i < NUM_OF_Control_Data_PINs; i++)
         {
             u8 Loc_u8TempBit = Get_Lastbit(Copy_u8Command);
             switch (Loc_u8TempBit)

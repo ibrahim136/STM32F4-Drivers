@@ -49,6 +49,7 @@ int main(void)
     RCC_enuCLKControl(HSI,CLK_Enable);
     RCC_enuSelectSysCLK(HSI);
     HLCD_enuInit(LCD_1,5);
+    //HLCD_enuInit(LCD_2,3);
     //HSwitch_enuInit(1);
     Sched_enuInit();
     //Sched_Runnable_t r0 = {.p2f = ControlLED0 , .CyclicTime_ms=1,.periorty=0,.first_delay=0};

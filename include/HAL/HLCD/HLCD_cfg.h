@@ -73,6 +73,6 @@ typedef enum{
     NUM_OF_Control_Data_PINs
 }Control_Data_PINs_t;
 
-#define Data_Start_Index (E+1)
+
 
 #endif
