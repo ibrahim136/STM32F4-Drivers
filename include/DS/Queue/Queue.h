@@ -3,7 +3,6 @@
 #include "STD_types.h"
 
 #define Queue_Max 100
-#define Queueu8ptr_Max Queue_Max
 
 typedef enum{
     False_Bool,
@@ -16,19 +15,20 @@ typedef struct
     u8 front;
     u8 rear;
     u8 size;
-}Queue;
+}Queueu8;
 
-Queue CreateQueue();
-Bool_t IsEmptyQueue(Queue q);
-Bool_t IsFullQueue(Queue q);
-Bool_t QueuePush(Queue *q, u8 data);
-Bool_t QueuePop(Queue *q);
-u8 QueueFront(Queue q);
+Queueu8 CreateQueueu8();
+Bool_t IsEmptyQueueu8(Queueu8 q);
+Bool_t IsFullQueueu8(Queueu8 q);
+Bool_t Queueu8Push(Queueu8 *q, u8 data);
+Bool_t Queueu8Pop(Queueu8 *q);
+u8 Queueu8Front(Queueu8 q);
 
+//--------------------------------------------------------------------
 
 typedef struct
 {
-    u8 *arr[Queueu8ptr_Max];
+    u8 *arr[Queue_Max];
     u8 front;
     u8 rear;
     u8 size;
@@ -40,4 +40,29 @@ Bool_t IsFullQueueu8ptr(Queueu8ptr q);
 Bool_t Queueu8ptrPush(Queueu8ptr *q, u8 *data);
 Bool_t Queueu8ptrPop(Queueu8ptr *q);
 u8* Queueu8ptrFront(Queueu8ptr q);
+
+//------------------------------------------------------------
+
+typedef enum
+{
+    CMD,
+    Data,
+    String
+}Orders_t;
+
+typedef struct
+{
+    Orders_t arr[Queue_Max];
+    u8 front;
+    u8 rear;
+    u8 size;
+}QueueOrders;
+
+QueueOrders CreateQueueOrders();
+Bool_t IsEmptyQueueOrders(QueueOrders q);
+Bool_t IsFullQueueOrders(QueueOrders q);
+Bool_t QueueOrdersPush(QueueOrders *q, Orders_t data);
+Bool_t QueueOrdersPop(QueueOrders *q);
+Orders_t QueueOrdersFront(QueueOrders q);
+
 #endif

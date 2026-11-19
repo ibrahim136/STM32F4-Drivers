@@ -477,40 +477,24 @@ static u8 RequestedString[LCD_Count][16*100];
 static ReuestedCMD[LCD_Count][100];
 static u8 Cur_Pos[LCD_Count];
 
+typedef enum
+{
+    CMD,
+    Data,
+    String
+}Orders_t;
+
 static Queue Orders[LCD_Count];
 static Queue Data[LCD_Count];
 static Queue CMD[LCD_Count];
 static Queueu8ptr Strings[LCD_Count];
 
-static inline void ConcatenateString(LCD_Numbers_t Copy_enuLCDNumber,u8 *Copy_u8String)
-{
-    u16 i =0;
-    while(RequestedString[i])
-    {
-        i++;
-    }
-    i++;
-    int j=0;
-    while(Copy_u8String[j])
-    {
-        RequestedString[i] = Copy_u8String[j];
-        i++;j++;
-    }
-    RequestedString[i] = '\0';
-}
-
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    if (HLCD_State[Copy_enuLCDNumber] != Available && HLCD_DataSeq[Copy_enuLCDNumber] != Write_Done)
-        Loc_enuHLCD_Error_Status = HLCD_Busy;
-    if (Loc_enuHLCD_Error_Status == HLCD_OK && HLCD_InitSeq[Copy_enuLCDNumber] != Init_Done)
-        Loc_enuHLCD_Error_Status = HLCD_LCDNotInitilized;
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
-        HLCD_DataSeq[Copy_enuLCDNumber] = Write_String;
-        RequestedString[Copy_enuLCDNumber] = Copy_u8String;
-        HLCD_State[Copy_enuLCDNumber] = Busy;
+        Queueu8ptrPush (&Strings[Copy_enuLCDNumber], Copy_u8String);
     }
     return Loc_enuHLCD_Error_Status;
 }
