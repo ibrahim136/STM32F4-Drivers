@@ -473,28 +473,19 @@ typedef enum
 
 HLCD_enuDataSeq_t HLCD_DataSeq[LCD_Count];
 static u8 String_Index[LCD_Count];
-static u8 RequestedString[LCD_Count][16*100];
-static ReuestedCMD[LCD_Count][100];
 static u8 Cur_Pos[LCD_Count];
 
-typedef enum
-{
-    CMD,
-    Data,
-    String
-}Orders_t;
-
-static Queue Orders[LCD_Count];
-static Queue Data[LCD_Count];
-static Queue CMD[LCD_Count];
-static Queueu8ptr Strings[LCD_Count];
+static QueueOrders Orders_q[LCD_Count];
+static Queueu8 Data_q[LCD_Count];
+static Queueu8 CMD_q[LCD_Count];
+static Queueu8ptr Strings_q[LCD_Count];
 
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
-        Queueu8ptrPush (&Strings[Copy_enuLCDNumber], Copy_u8String);
+        Queueu8ptrPush (&Strings_q[Copy_enuLCDNumber], Copy_u8String);
     }
     return Loc_enuHLCD_Error_Status;
 }
