@@ -29,6 +29,8 @@
 
 #define Entry_Mode_Command(Move_Cursor,ShiftCursorMode) (0b00000100UL | Shift_Left(Move_Cursor,1) |  ShiftCursorMode)
 
+#define Cursor_Position_Command(row,col) ( (0x80UL)| (0x40UL*row) | (col) )
+#define Second_Line (0x40UL)
 
 
 #endif

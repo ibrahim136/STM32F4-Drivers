@@ -461,30 +461,33 @@ static u8 exisit_LCDs;
 typedef enum
 {
     No_req,
+    Write_Cmd,
+    Write_Cmd_Wait,
     Write_String,
     Write_String_Wait,
     Write_Data,
     Write_Data_Wait,
-    // Write_Cmd,
-    // Write_Cmd_Wait,
+    Write_Done
 } HLCD_enuDataSeq_t;
 
 HLCD_enuDataSeq_t HLCD_DataSeq[LCD_Count];
 static u8 String_Index[LCD_Count];
 static u8 *RequestedString[LCD_Count];
+static ReuestedCMD[LCD_Count];
+static u8 Cur_Pos[LCD_Count];
 
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    if (HLCD_State[Copy_enuLCDNumber] != Available)
+    if (HLCD_State[Copy_enuLCDNumber] != Available && HLCD_DataSeq[Copy_enuLCDNumber] != Write_Done)
         Loc_enuHLCD_Error_Status = HLCD_Busy;
     if (Loc_enuHLCD_Error_Status == HLCD_OK && HLCD_InitSeq[Copy_enuLCDNumber] != Init_Done)
         Loc_enuHLCD_Error_Status = HLCD_LCDNotInitilized;
     if (Loc_enuHLCD_Error_Status == HLCD_OK)
     {
-        RequestedString[Copy_enuLCDNumber] = Copy_u8String;
         HLCD_DataSeq[Copy_enuLCDNumber] = Write_String;
-        HLCD_State[Copy_enuLCDNumber] = HLCD_Busy;
+        RequestedString[Copy_enuLCDNumber] = Copy_u8String;
+        HLCD_State[Copy_enuLCDNumber] = Busy;
     }
     return Loc_enuHLCD_Error_Status;
 }
@@ -494,9 +497,9 @@ static inline HLCD_Error_Status_t HLCD_ValidRow(Row_Number_t Copy_enuRow)
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     switch (Copy_enuRow)
     {
-        case 0 ... Row_Count-1:
+    case 0 ... Row_Count - 1:
         break;
-        default:
+    default:
         Loc_enuHLCD_Error_Status = HLCD_InvalidRow;
         break;
     }
@@ -508,9 +511,9 @@ static inline HLCD_Error_Status_t HLCD_ValidCol(Col_Number_t Copy_enuCol)
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     switch (Copy_enuCol)
     {
-        case 0 ... Col_Count-1:
+    case 0 ... Col_Count - 1:
         break;
-        default:
+    default:
         Loc_enuHLCD_Error_Status = HLCD_InvalidRow;
         break;
     }
@@ -520,8 +523,16 @@ static inline HLCD_Error_Status_t HLCD_ValidCol(Col_Number_t Copy_enuCol)
 HLCD_Error_Status_t HLCD_enuSetCursorPos(LCD_Numbers_t Copy_enuLCDNumber, Row_Number_t Copy_enuRow, Col_Number_t Copy_enuCol)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    u8 Loc_u8Command = 0x80;
-    Loc_u8Command |= (0x40 * (Copy_enuRow-1) );
+    if (HLCD_State[Copy_enuLCDNumber] != Available)
+        Loc_enuHLCD_Error_Status = HLCD_Busy;
+    if (Loc_enuHLCD_Error_Status == HLCD_OK && HLCD_InitSeq[Copy_enuLCDNumber] != Init_Done)
+        Loc_enuHLCD_Error_Status = HLCD_LCDNotInitilized;
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        HLCD_DataSeq[Copy_enuLCDNumber] = Write_Cmd;
+        Cur_Pos[Copy_enuLCDNumber] = Cursor_Position_Command(Copy_enuRow, Copy_enuCol);
+        HLCD_State[Copy_enuLCDNumber] = Busy;
+    }
     return Loc_enuHLCD_Error_Status;
 }
 
@@ -533,6 +544,28 @@ static void HLCD_Runnable(void)
     {
         switch (HLCD_DataSeq[Loc_LCDnumber])
         {
+        case Write_Cmd:
+            Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Loc_LCDnumber, &Two_Waits[Loc_LCDnumber]);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                HLCD_DataSeq[Loc_LCDnumber]++;
+            }
+            break;
+        case Write_Cmd_Wait:
+            Loc_enuHLCD_Error_Status = HLCD_enuPINCtrl(Loc_LCDnumber, E, PIN_LOW);
+            if (Loc_enuHLCD_Error_Status == HLCD_OK)
+            {
+                if (Two_Waits[Loc_LCDnumber] == Wait2_Done)
+                {
+                    Two_Waits[Loc_LCDnumber] = Wait2_1;
+                    HLCD_DataSeq[Loc_LCDnumber] = Write_Done;
+                }
+                else
+                {
+                    HLCD_DataSeq[Loc_LCDnumber]--;
+                }
+            }
+            break;
         case Write_String:
             Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]], &Two_Waits[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
@@ -550,7 +583,7 @@ static void HLCD_Runnable(void)
                     Two_Waits[Loc_LCDnumber] = Wait2_1;
                     if (RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]] == '\0')
                     {
-                        HLCD_DataSeq[Loc_LCDnumber]++;
+                        HLCD_DataSeq[Loc_LCDnumber] = Write_Done;
                     }
                     else
                     {
@@ -565,7 +598,7 @@ static void HLCD_Runnable(void)
             }
             break;
         case Write_Data:
-            //Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, 'a', &Two_Waits[Loc_LCDnumber]);
+            // Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, 'a', &Two_Waits[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
                 HLCD_DataSeq[Loc_LCDnumber]++;
             break;
@@ -585,6 +618,7 @@ static void HLCD_Runnable(void)
             }
             break;
         default:
+            HLCD_State[Loc_LCDnumber] = Available;
             break;
         }
     }
@@ -731,6 +765,12 @@ static inline u8 AlreadyInitilized(LCD_Numbers_t Copy_enuLCDNumber)
     return Loc_return;
 }
 
+static inline void settingcursorposatbegining(LCD_Numbers_t Copy_enuLCDNumber)
+{
+    Cur_Pos[Copy_enuLCDNumber] = Cursor_Position_Command(Row_1, Col_1);
+    return;
+}
+
 HLCD_Error_Status_t HLCD_enuInit(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Priority)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValidLCDNumber(Copy_enuLCDNumber);
@@ -766,6 +806,7 @@ HLCD_Error_Status_t HLCD_enuInit(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Prio
                 LCD_Periority[exisit_LCDs].LCD_no = Copy_enuLCDNumber;
                 LCD_Periority[exisit_LCDs].Priority = Copy_u8Priority;
                 OrderingLCDPeriorityArray();
+                settingcursorposatbegining(Copy_enuLCDNumber);
                 exisit_LCDs++;
                 break;
             }
