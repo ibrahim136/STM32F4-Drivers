@@ -44,6 +44,8 @@ typedef enum
     HLCD_InvalidRow,
     HLCD_InvalidCol,
 
+    HLCD_FullBuffer,
+
     HLCD_RCC_Timeout,
     HLCD_RCC_InvalidParam,
     HLCD_RCC_ClockInUse,

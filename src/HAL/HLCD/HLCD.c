@@ -4,6 +4,7 @@
 #include "rcc.h"
 #include "Bit_math.h"
 #include "Sched.h"
+#include "Queue.h"
 
 typedef enum
 {
@@ -472,9 +473,31 @@ typedef enum
 
 HLCD_enuDataSeq_t HLCD_DataSeq[LCD_Count];
 static u8 String_Index[LCD_Count];
-static u8 *RequestedString[LCD_Count];
-static ReuestedCMD[LCD_Count];
+static u8 RequestedString[LCD_Count][16*100];
+static ReuestedCMD[LCD_Count][100];
 static u8 Cur_Pos[LCD_Count];
+
+static Queue Orders[LCD_Count];
+static Queue Data[LCD_Count];
+static Queue CMD[LCD_Count];
+static Queueu8ptr Strings[LCD_Count];
+
+static inline void ConcatenateString(LCD_Numbers_t Copy_enuLCDNumber,u8 *Copy_u8String)
+{
+    u16 i =0;
+    while(RequestedString[i])
+    {
+        i++;
+    }
+    i++;
+    int j=0;
+    while(Copy_u8String[j])
+    {
+        RequestedString[i] = Copy_u8String[j];
+        i++;j++;
+    }
+    RequestedString[i] = '\0';
+}
 
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
 {
