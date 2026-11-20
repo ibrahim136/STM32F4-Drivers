@@ -379,6 +379,33 @@ static inline HLCD_Error_Status_t HLCD_enuEntryMode(LCD_Numbers_t Copy_enuLCDNum
     return Loc_enuHLCD_Error_Status;
 }
 
+static inline HLCD_Error_Status_t HLCD_enuSendCommandPure(LCD_Numbers_t Copy_enuLCDNumber, Two_Waits_t *Ref_enuTwo_Waits,u8 Loc_u8Command)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
+    switch (LCDs_Init_Conf[Copy_enuLCDNumber].DL)
+    {
+    case _8_BIT_MODE:
+        Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Copy_enuLCDNumber, Loc_u8Command);
+        *Ref_enuTwo_Waits = Wait2_Done;
+        break;
+    default:
+        switch (*Ref_enuTwo_Waits)
+        {
+        case Wait2_1:
+            Loc_u8Command = Get_HigherNipple(Loc_u8Command);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Copy_enuLCDNumber, Loc_u8Command);
+            (*Ref_enuTwo_Waits)++;
+            break;
+        default:
+            Loc_u8Command = Get_LowerNipple(Loc_u8Command);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Copy_enuLCDNumber, Loc_u8Command);
+            (*Ref_enuTwo_Waits)++;
+            break;
+        }
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
 static inline HLCD_Error_Status_t HLCD_enuSendData(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Data)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValid(Copy_enuLCDNumber, Copy_u8Data);
@@ -449,6 +476,9 @@ static inline HLCD_Error_Status_t HLCD_enuSendChar(LCD_Numbers_t Copy_enuLCDNumb
     return Loc_enuHLCD_Error_Status;
 }
 
+
+
+
 typedef struct
 {
     LCD_Numbers_t LCD_no;
@@ -461,14 +491,13 @@ static u8 exisit_LCDs;
 
 typedef enum
 {
-    No_req,
+    Write_Done,
     Write_Cmd,
     Write_Cmd_Wait,
     Write_String,
     Write_String_Wait,
     Write_Data,
     Write_Data_Wait,
-    Write_Done
 } HLCD_enuDataSeq_t;
 
 HLCD_enuDataSeq_t HLCD_DataSeq[LCD_Count];
@@ -483,9 +512,15 @@ static Queueu8ptr Strings_q[LCD_Count];
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    if (IsFullQueueOrders(Orders_q[Copy_enuLCDNumber]))
     {
-        Queueu8ptrPush (&Strings_q[Copy_enuLCDNumber], Copy_u8String);
+        Loc_enuHLCD_Error_Status = HLCD_FullBuffer;
+    }
+    else
+    {
+
+        Queueu8ptrPush(&Strings_q[Copy_enuLCDNumber], Copy_u8String);
+        QueueOrdersPush(&Orders_q, String);
     }
     return Loc_enuHLCD_Error_Status;
 }
@@ -521,18 +556,49 @@ static inline HLCD_Error_Status_t HLCD_ValidCol(Col_Number_t Copy_enuCol)
 HLCD_Error_Status_t HLCD_enuSetCursorPos(LCD_Numbers_t Copy_enuLCDNumber, Row_Number_t Copy_enuRow, Col_Number_t Copy_enuCol)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
-    if (HLCD_State[Copy_enuLCDNumber] != Available)
-        Loc_enuHLCD_Error_Status = HLCD_Busy;
-    if (Loc_enuHLCD_Error_Status == HLCD_OK && HLCD_InitSeq[Copy_enuLCDNumber] != Init_Done)
-        Loc_enuHLCD_Error_Status = HLCD_LCDNotInitilized;
-    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    if (IsFullQueueOrders(Orders_q[Copy_enuLCDNumber]))
     {
-        HLCD_DataSeq[Copy_enuLCDNumber] = Write_Cmd;
-        Cur_Pos[Copy_enuLCDNumber] = Cursor_Position_Command(Copy_enuRow, Copy_enuCol);
-        HLCD_State[Copy_enuLCDNumber] = Busy;
+        Loc_enuHLCD_Error_Status = HLCD_FullBuffer;
+    }
+    else
+    {
+        Queueu8Push(&CMD_q[Copy_enuLCDNumber], Cursor_Position_Command(Copy_enuRow, Copy_enuCol));
+        QueueOrdersPush(&Orders_q, CMD);
     }
     return Loc_enuHLCD_Error_Status;
 }
+
+static inline void OrdersPop(LCD_Numbers_t Copy_enuLCDNumber, u8 *Loc_u8CMD, u8 **Loc_u8String, u8 *Loc_u8Data)
+{
+    Orders_t Loc_enuOrder;
+    if (!IsEmptyQueueOrders(Orders_q[Copy_enuLCDNumber]) && HLCD_DataSeq[Copy_enuLCDNumber] == Write_Done)
+    {
+        Loc_enuOrder = QueueOrdersFront(Orders_q[Copy_enuLCDNumber]);
+        QueueOrdersPop(&Orders_q[Copy_enuLCDNumber]);
+        switch (Loc_enuOrder)
+        {
+        case CMD:
+            *Loc_u8CMD = Queueu8Front(CMD_q[Copy_enuLCDNumber]);
+            Queueu8Pop(&CMD_q[Copy_enuLCDNumber]);
+            HLCD_DataSeq[Copy_enuLCDNumber] = Write_Cmd;
+            break;
+        case Data:
+            *Loc_u8Data = Queueu8Front(Data_q[Copy_enuLCDNumber]);
+            Queueu8Pop(&Data_q[Copy_enuLCDNumber]);
+            HLCD_DataSeq[Copy_enuLCDNumber] = Write_Data;
+            break;
+        default:
+            *Loc_u8String = Queueu8ptrFront(Strings_q[Copy_enuLCDNumber]);
+            Queueu8ptrPop(&Strings_q[Copy_enuLCDNumber]);
+            HLCD_DataSeq[Copy_enuLCDNumber] = Write_String;
+            break;
+        }
+    }
+}
+
+u8 Loc_u8CMD[LCD_Count];
+u8 Loc_u8Data[LCD_Count];
+u8 *Loc_u8String[LCD_Count];
 
 static void HLCD_Runnable(void)
 {
@@ -540,10 +606,11 @@ static void HLCD_Runnable(void)
     LCD_Numbers_t Loc_LCDnumber = LCD_Periority[LCD_CNT_for_Runnables].LCD_no;
     if (HLCD_InitSeq[Loc_LCDnumber] == Init_Done)
     {
+        OrdersPop(Loc_LCDnumber, &Loc_u8CMD[Loc_LCDnumber], &Loc_u8String[Loc_LCDnumber], &Loc_u8Data[Loc_LCDnumber]);
         switch (HLCD_DataSeq[Loc_LCDnumber])
         {
         case Write_Cmd:
-            Loc_enuHLCD_Error_Status = HLCD_enuSendCommand(Loc_LCDnumber, &Two_Waits[Loc_LCDnumber]);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendCommandPure(Loc_LCDnumber, &Two_Waits[Loc_LCDnumber],Loc_u8CMD[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
             {
                 HLCD_DataSeq[Loc_LCDnumber]++;
@@ -565,7 +632,7 @@ static void HLCD_Runnable(void)
             }
             break;
         case Write_String:
-            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]], &Two_Waits[Loc_LCDnumber]);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, Loc_u8String[Loc_LCDnumber][String_Index[Loc_LCDnumber]], &Two_Waits[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
             {
                 HLCD_DataSeq[Loc_LCDnumber]++;
@@ -579,8 +646,9 @@ static void HLCD_Runnable(void)
                 if (Two_Waits[Loc_LCDnumber] == Wait2_Done)
                 {
                     Two_Waits[Loc_LCDnumber] = Wait2_1;
-                    if (RequestedString[Loc_LCDnumber][String_Index[Loc_LCDnumber]] == '\0')
+                    if (Loc_u8String[Loc_LCDnumber][String_Index[Loc_LCDnumber]] == '\0')
                     {
+                        String_Index[Loc_LCDnumber] = 0;
                         HLCD_DataSeq[Loc_LCDnumber] = Write_Done;
                     }
                     else
@@ -596,7 +664,7 @@ static void HLCD_Runnable(void)
             }
             break;
         case Write_Data:
-            // Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, 'a', &Two_Waits[Loc_LCDnumber]);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, Loc_u8Data, &Two_Waits[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
                 HLCD_DataSeq[Loc_LCDnumber]++;
             break;
@@ -607,7 +675,7 @@ static void HLCD_Runnable(void)
                 if (Two_Waits[Loc_LCDnumber] == Wait2_Done)
                 {
                     Two_Waits[Loc_LCDnumber] = Wait2_1;
-                    HLCD_DataSeq[Loc_LCDnumber]++;
+                    HLCD_DataSeq[Loc_LCDnumber] = Write_Done;
                 }
                 else
                 {
