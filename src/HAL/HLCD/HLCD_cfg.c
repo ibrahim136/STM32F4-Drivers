@@ -3,7 +3,7 @@
 
 const LCD_Init_cfg_t LCDs_Init_Conf[LCD_Count] =
     {
-        [LCD_1] = {.DL = _8_BIT_MODE, .N = _2_Line_MODE, .F = _5x7_dots, .D = DisplayOn, .C = CursorOn, .B = BlinkOn, .I_D = Increase_Cursor, .S = ShiftScreenOff},
+        [LCD_1] = {.DL = _4_BIT_MODE, .N = _2_Line_MODE, .F = _5x7_dots, .D = DisplayOn, .C = CursorOff, .B = BlinkOff, .I_D = Increase_Cursor, .S = ShiftScreenOff},
         [LCD_2] = {.DL = _8_BIT_MODE, .N = _2_Line_MODE, .F = _5x7_dots, .D = DisplayOn, .C = CursorOn, .B = BlinkOn, .I_D = Increase_Cursor, .S = ShiftScreenOff}};
 
 const HLCD_PIN_cfg_t HLCD_PIN_cfg[LCD_Count][NUM_OF_Control_Data_PINs] =
