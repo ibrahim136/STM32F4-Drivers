@@ -269,5 +269,9 @@ Bool_t Queueu64Pop(Queueu64 *q)
 
 u64 Queueu64Front(Queueu64 q)
 {
+    if (IsEmptyQueueu64(q))
+    {
+        return 0;
+    }
     return q.arr[q.front];
 }

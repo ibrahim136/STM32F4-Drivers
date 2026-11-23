@@ -71,7 +71,7 @@ Orders_t QueueOrdersFront(QueueOrders q);
 
 typedef struct
 {
-    u8 arr[Queue_Max];
+    u64 arr[Queue_Max];
     u8 front;
     u8 rear;
     u8 size;

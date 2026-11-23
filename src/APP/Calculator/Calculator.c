@@ -4,12 +4,12 @@
 #include "Sched.h"
 #include "HSwitch.h"
 #include "HLCD_cfg.h"
-#include "Queue.h"
+#include "Stack.h"
 
 #define High_Time Number_Of_Readings *Number_Of_Readings + 1
 #define NUM_OF_Cols 4
 
-static Queueu64 Calculations_q;
+static Stacku64 Calculations_s;
 
 static u8 Matrix[NUM_OF_Rows][NUM_OF_Cols][2] = {{"1", "2", "3", "+"}, {"4", "5", "6", "-"}, {"7", "8", "9", "x"}, {"/", "0", "", "="}};
 
@@ -34,7 +34,7 @@ typedef enum
 
 static void Row_voidRunnable(void);
 
-static Sched_Runnable_t SchedRunnable = {.p2f = Row_voidRunnable, .CyclicTime_ms = High_Time, .first_delay = 0};
+static Sched_Runnable_t SchedRunnable = {.p2f = Row_voidRunnable, .CyclicTime_ms = High_Time, .first_delay = 100};
 
 static inline Calculator_Error_Status_t Calculator_enuRCCErrorToCalculatorError(RCC_Error_Status_t Copy_enuRCC_Error_Status)
 {
@@ -169,10 +169,79 @@ static inline Calculator_Error_Status_t Check_LCD(LCD_Numbers_t Copy_enuLCD)
     return Loc_enuCalculator_Error_Status;
 }
 
+void PrintAnswer(u64 Copy_u64Answer)
+{
+    Stacku64 temp = CreateStacku64();
+    while (Copy_u64Answer)
+    {
+        Stacku64Push(&temp, Copy_u64Answer % 10);
+        Copy_u64Answer /= 10;
+    }
+    static u8 answer[17];
+    for (u8 i = 0; i < 16 && IsEmptyStacku64(temp) == False_Bool; i++)
+    {
+        answer[i] = Stacku64Back(temp) + '0';
+        answer[i + 1] = '\0';
+        Stacku64Pop(&temp);
+    }
+    HLCD_enuWriteString(LCD_NO, answer);
+}
+
+static inline void CalculateAnswer(void)
+{
+    u64 res = 0;
+    u64 temp1 = 0;
+    u64 temp2 = 0;
+    u64 operation = 0;
+    u8 divided_by_zero = 0;
+    while (IsEmptyStacku64(Calculations_s) == False_Bool)
+    {
+        temp2 = Stacku64Back(Calculations_s);
+        Stacku64Pop(&Calculations_s);
+        operation = Stacku64Back(Calculations_s);
+        Stacku64Pop(&Calculations_s);
+        temp1 = Stacku64Back(Calculations_s);
+        Stacku64Pop(&Calculations_s);
+        switch (operation)
+        {
+        case '+':
+            res += temp1 + temp2;
+            break;
+        case '-':
+            res += temp1 - temp2;
+            break;
+        case 'x':
+            res += temp1 * temp2;
+            break;
+        default:
+            if (temp2 == 0)
+                divided_by_zero = 1;
+            res += temp1 / temp2;
+            break;
+        }
+    }
+    if (divided_by_zero)
+    {
+        HLCD_enuWriteString(LCD_NO, "Infinite");
+    }
+    else
+    {
+        PrintAnswer(res);
+    }
+}
+
+static inline void clear(void)
+{
+    HLCD_enuSetCursorPos(LCD_NO, Row_2, Col_1);
+    HLCD_enuWriteString(LCD_NO, "                ");
+    HLCD_enuSetCursorPos(LCD_NO, Row_2, Col_1);
+}
+
 void Col_voidRunnable(void)
 {
     HSwitch_Switches_t i = Switch_no_1;
     Switch_State_t Loc_enuSwitchState = Unknown;
+    static u8 is_cal = 0;
     for (; i < Switch_no_1 + 4; i++)
     {
         HSwitch_enuReadState(i, &Loc_enuSwitchState);
@@ -183,15 +252,31 @@ void Col_voidRunnable(void)
     {
         if (Row_High_State - 1 != Row_4_OUT || i != (u8)Col_3_IN)
         {
+            if (is_cal)
+            {
+                clear();
+                is_cal = 0;
+            }
             HLCD_enuWriteString(LCD_NO, Matrix[Row_High_State - 1][i]);
             u64 temp;
-            switch(Matrix[Row_High_State - 1][i][0])
+            switch (Matrix[Row_High_State - 1][i][0])
             {
-                case '0' ... '9':
-                temp = Queueu64Front(Calculations_q);
-                Queueu64Pop(&Calculations_q);
+            case '0' ... '9':
+                temp = Stacku64Back(Calculations_s);
+                Stacku64Pop(&Calculations_s);
                 temp = temp * 10 + Matrix[Row_High_State - 1][i][0] - '0';
-                Queueu64Push(&Calculations_q,temp);
+                Stacku64Push(&Calculations_s, temp);
+                break;
+            case '+':
+            case '-':
+            case 'x':
+            case '/':
+                Stacku64Push(&Calculations_s, Matrix[Row_High_State - 1][i][0]);
+                Stacku64Push(&Calculations_s, 0);
+                break;
+            default:
+                CalculateAnswer();
+                is_cal = 1;
                 break;
             }
         }
@@ -206,8 +291,8 @@ Calculator_Error_Status_t Calculatorenu_On(LCD_Numbers_t Copy_enuLCD)
     {
         LCD_NO = Copy_enuLCD;
     }
-    Calculations_q = CreateQueueu64();
-    Queueu64Push(&Calculations_q,0);
+    Calculations_s = CreateStacku64();
+    Stacku64Push(&Calculations_s, 0);
     Sched_enuInit();
     HLCD_enuInit(LCD_NO, 5);
     HSwitch_enuInit(6);
@@ -217,7 +302,7 @@ Calculator_Error_Status_t Calculatorenu_On(LCD_Numbers_t Copy_enuLCD)
     HLCD_enuWriteString(LCD_NO, "Calculator");
     HLCD_enuSetCursorPos(LCD_NO, Row_2, Col_1);
 
-    static Sched_Runnable_t r0 = {.CyclicTime_ms = High_Time, .first_delay = 0, .p2f = Col_voidRunnable, .periorty = 7};
+    static Sched_Runnable_t r0 = {.CyclicTime_ms = High_Time, .first_delay = 100, .p2f = Col_voidRunnable, .periorty = 7};
     Sched_enuAddRunnable(&r0);
     return Loc_enuCalculator_Error_Status;
 }
