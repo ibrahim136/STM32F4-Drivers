@@ -9,8 +9,19 @@
 #include "Clock.h"
 #include "Calculator.h"
 
+u8 ITI_Logo[8] = {
+    0b10000,
+    0b00000,
+    0b10001,
+    0b11110,
+    0b10101,
+    0b10101,
+    0b00101,
+    0b00001};
+    
 int main(void)
 {
-    Calculatorenu_On(LCD_1);
+    Clockenu_On(LCD_1, (u8 *)"   Hello ITI ");
+    Clock_enuAddCustomChar(0, ITI_Logo);
     Sched_Start();
 }

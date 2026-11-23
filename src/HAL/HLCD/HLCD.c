@@ -379,7 +379,7 @@ static inline HLCD_Error_Status_t HLCD_enuEntryMode(LCD_Numbers_t Copy_enuLCDNum
     return Loc_enuHLCD_Error_Status;
 }
 
-static inline HLCD_Error_Status_t HLCD_enuSendCommandPure(LCD_Numbers_t Copy_enuLCDNumber, Two_Waits_t *Ref_enuTwo_Waits,u8 Loc_u8Command)
+static inline HLCD_Error_Status_t HLCD_enuSendCommandPure(LCD_Numbers_t Copy_enuLCDNumber, Two_Waits_t *Ref_enuTwo_Waits, u8 Loc_u8Command)
 {
     HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_OK;
     switch (LCDs_Init_Conf[Copy_enuLCDNumber].DL)
@@ -476,9 +476,6 @@ static inline HLCD_Error_Status_t HLCD_enuSendChar(LCD_Numbers_t Copy_enuLCDNumb
     return Loc_enuHLCD_Error_Status;
 }
 
-
-
-
 typedef struct
 {
     LCD_Numbers_t LCD_no;
@@ -520,7 +517,7 @@ HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Cop
     {
 
         Queueu8ptrPush(&Strings_q[Copy_enuLCDNumber], Copy_u8String);
-        QueueOrdersPush(&Orders_q, String);
+        QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], String);
     }
     return Loc_enuHLCD_Error_Status;
 }
@@ -563,7 +560,8 @@ HLCD_Error_Status_t HLCD_enuSetCursorPos(LCD_Numbers_t Copy_enuLCDNumber, Row_Nu
     else
     {
         Queueu8Push(&CMD_q[Copy_enuLCDNumber], Cursor_Position_Command(Copy_enuRow, Copy_enuCol));
-        QueueOrdersPush(&Orders_q, CMD);
+        Cur_Pos[Copy_enuLCDNumber] = Cursor_Position_Command(Copy_enuRow, Copy_enuCol);
+        QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], CMD);
     }
     return Loc_enuHLCD_Error_Status;
 }
@@ -610,7 +608,7 @@ static void HLCD_Runnable(void)
         switch (HLCD_DataSeq[Loc_LCDnumber])
         {
         case Write_Cmd:
-            Loc_enuHLCD_Error_Status = HLCD_enuSendCommandPure(Loc_LCDnumber, &Two_Waits[Loc_LCDnumber],Loc_u8CMD[Loc_LCDnumber]);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendCommandPure(Loc_LCDnumber, &Two_Waits[Loc_LCDnumber], Loc_u8CMD[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
             {
                 HLCD_DataSeq[Loc_LCDnumber]++;
@@ -664,7 +662,7 @@ static void HLCD_Runnable(void)
             }
             break;
         case Write_Data:
-            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, Loc_u8Data, &Two_Waits[Loc_LCDnumber]);
+            Loc_enuHLCD_Error_Status = HLCD_enuSendChar(Loc_LCDnumber, Loc_u8Data[Loc_LCDnumber], &Two_Waits[Loc_LCDnumber]);
             if (Loc_enuHLCD_Error_Status == HLCD_OK)
                 HLCD_DataSeq[Loc_LCDnumber]++;
             break;
@@ -876,6 +874,62 @@ HLCD_Error_Status_t HLCD_enuInit(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Prio
                 exisit_LCDs++;
                 break;
             }
+        }
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
+static u8 CustomChar_Index[LCD_Count];
+
+HLCD_Error_Status_t HLCD_enuSaveCustomChar(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Index, const u8 *Copy_pu8Pattern)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValidLCDNumber(Copy_enuLCDNumber);
+
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        if (Copy_u8Index > 7)
+        {
+            Loc_enuHLCD_Error_Status = HLCD_InvalidCustomCharacterIndex;
+        }
+        else if (Copy_pu8Pattern == nullptr)
+        {
+            Loc_enuHLCD_Error_Status = HLCD_InvalidCFG;
+        }
+        else
+        {
+            Queueu8Push(&CMD_q[Copy_enuLCDNumber], Set_CGRAM_Address(Copy_u8Index));
+            QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], CMD);
+
+            for (u8 i = 0; i < 8; i++)
+            {
+                Queueu8Push(&Data_q[Copy_enuLCDNumber], Copy_pu8Pattern[i]);
+                QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], Data);
+            }
+            Queueu8Push(&CMD_q[Copy_enuLCDNumber], Cur_Pos[Copy_enuLCDNumber]);
+            QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], CMD);
+        }
+    }
+    return Loc_enuHLCD_Error_Status;
+}
+
+HLCD_Error_Status_t HLCD_enuDisplayCustomChar(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Index)
+{
+    HLCD_Error_Status_t Loc_enuHLCD_Error_Status = HLCD_enuValidLCDNumber(Copy_enuLCDNumber);
+
+    if (Loc_enuHLCD_Error_Status == HLCD_OK)
+    {
+        if (Copy_u8Index > 7)
+        {
+            Loc_enuHLCD_Error_Status = HLCD_InvalidCustomCharacterIndex;
+        }
+        else if (IsFullQueueOrders(Orders_q[Copy_enuLCDNumber]))
+        {
+            Loc_enuHLCD_Error_Status = HLCD_FullBuffer;
+        }
+        else
+        {
+            Queueu8Push(&Data_q[Copy_enuLCDNumber], Copy_u8Index);
+            QueueOrdersPush(&Orders_q[Copy_enuLCDNumber], Data);
         }
     }
     return Loc_enuHLCD_Error_Status;

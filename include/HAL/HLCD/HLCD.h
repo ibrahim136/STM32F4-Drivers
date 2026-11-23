@@ -57,6 +57,8 @@ typedef enum
     HLCD_GPIO_InvalidParam,
     HLCD_Sched_InvalidPeriortyNumber,
     HLCD_Sched_PeriortyNotFree,
+    
+    HLCD_InvalidCustomCharacterIndex
 
 } HLCD_Error_Status_t;
 
@@ -69,4 +71,8 @@ typedef struct
 HLCD_Error_Status_t HLCD_enuInit(LCD_Numbers_t Copy_enuLCDNumber,u8 Copy_u8Priority);
 HLCD_Error_Status_t HLCD_enuWriteString(LCD_Numbers_t Copy_enuLCDNumber, u8 *Copy_u8String);
 HLCD_Error_Status_t HLCD_enuSetCursorPos(LCD_Numbers_t Copy_enuLCDNumber, Row_Number_t Copy_enuRow, Col_Number_t Copy_enuCol);
+
+HLCD_Error_Status_t HLCD_enuSaveCustomChar(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Index, const u8 *Copy_pu8Pattern);
+HLCD_Error_Status_t HLCD_enuDisplayCustomChar(LCD_Numbers_t Copy_enuLCDNumber, u8 Copy_u8Index);
+
 #endif

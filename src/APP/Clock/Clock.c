@@ -58,3 +58,30 @@ Clock_Error_Status_t Clockenu_On(LCD_Numbers_t Copy_enuLCD, u8* Copy_enuWelcomeS
     Sched_enuAddRunnable(&r0);
     return Loc_enuClock_Error_Status;
 }
+
+Clock_Error_Status_t Clock_enuAddCustomChar(u8 Copy_u8Index,u8 *Copy_pu8Pattern)
+{
+    Clock_Error_Status_t Loc_enuClock_Error_Status = Clock_OK;
+
+    if (Copy_pu8Pattern == nullptr || WelcomeString == nullptr || Copy_u8Index > 7)
+    {
+        Loc_enuClock_Error_Status = Clock_InvalidParam;
+    }
+    else
+    {
+        u8 Loc_u8Len = 0;
+        while (WelcomeString[Loc_u8Len] != '\0')
+        {
+            Loc_u8Len++;
+        }
+
+        if (Loc_u8Len < Col_Count)
+        {
+            HLCD_enuSaveCustomChar(LCD_NO, Copy_u8Index, Copy_pu8Pattern);
+            HLCD_enuSetCursorPos(LCD_NO, Row_1, (Col_Number_t)Loc_u8Len);
+            HLCD_enuDisplayCustomChar(LCD_NO, Copy_u8Index);
+        }
+    }
+
+    return Loc_enuClock_Error_Status;
+}
