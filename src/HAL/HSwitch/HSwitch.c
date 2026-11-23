@@ -4,7 +4,7 @@
 #include "GPIO.h"
 #include "Sched.h"
 
-#define Number_Of_Readings 5
+
 
 static void HSwitch_voidRunnable(void);
 Sched_Runnable_t SchedRunnable = {.p2f = HSwitch_voidRunnable, .CyclicTime_ms = Number_Of_Readings, .first_delay = 0};
@@ -156,7 +156,7 @@ static void HSwitch_voidRunnable(void)
         {
             switch (Switches_Counter[i])
             {
-            case 0 ... 4:
+            case 0 ... Number_Of_Readings-1:
                 Switches_Counter[i]++;
                 break;
             default:

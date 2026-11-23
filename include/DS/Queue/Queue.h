@@ -65,4 +65,24 @@ Bool_t QueueOrdersPush(QueueOrders *q, Orders_t data);
 Bool_t QueueOrdersPop(QueueOrders *q);
 Orders_t QueueOrdersFront(QueueOrders q);
 
+
+
+//....................................................................
+
+typedef struct
+{
+    u8 arr[Queue_Max];
+    u8 front;
+    u8 rear;
+    u8 size;
+}Queueu64;
+
+Queueu64 CreateQueueu64();
+Bool_t IsEmptyQueueu64(Queueu64 q);
+Bool_t IsFullQueueu64(Queueu64 q);
+Bool_t Queueu64Push(Queueu64 *q, u64 data);
+Bool_t Queueu64Pop(Queueu64 *q);
+u64 Queueu64Front(Queueu64 q);
+
+
 #endif

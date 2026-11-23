@@ -7,10 +7,10 @@
 #include "HSwitch_cfg.h"
 #include "HLCD.h"
 #include "Clock.h"
+#include "Calculator.h"
 
 int main(void)
 {
-
-    Clockenu_On(LCD_1,"   Hello ITI");
+    Calculatorenu_On(LCD_1);
     Sched_Start();
 }

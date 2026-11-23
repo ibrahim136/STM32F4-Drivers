@@ -3,6 +3,9 @@
 
 #include "GPIO.h"
 #include "HSwitch_cfg.h"
+
+#define Number_Of_Readings 5
+
 typedef enum
 {
     HSwitch_OK,

@@ -159,8 +159,8 @@ static inline GPIO_Error_Status_t PIN_CONF_Check(PIN_PORT_Conf_t * Ref_strPINCon
     return Loc_enuGPIO_Error_Status;
 
 }
-
 GPIO_Error_Status_t GPIO_enuPinWrite(GPIO_Port_t Copy_enuPORT, GPIO_PIN_Number_t Copy_enuPIN, GPIO_PIN_State_t Copy_enuState)
+
 {
     GPIO_Error_Status_t Loc_enuGPIO_Error_Status = GPIO_OK;
     Loc_enuGPIO_Error_Status = PORT_Check(Copy_enuPORT);

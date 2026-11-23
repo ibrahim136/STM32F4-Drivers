@@ -3,12 +3,7 @@
 
 const HLED_cfg_t HLED_cfg[NUM_OF_LED] =
     {
-        [PINA0] = {
-            .PORT = GPIO_PORTA,
-            .PIN = PIN0,
-            .PIN_Speed = Low_Speed,
-            .Active_State = Active_HIGH,
-            .PIN_Type = Push_Pull},
+        [PINA0] = {.PORT = GPIO_PORTA,.PIN = PIN0,.PIN_Speed = Low_Speed,.Active_State = Active_HIGH,.PIN_Type = Push_Pull},
         [PINA1] = {.PORT = GPIO_PORTA, .PIN = PIN1, .PIN_Speed = Low_Speed, .Active_State = Active_HIGH, .PIN_Type = Push_Pull},
         [PINA2] = {.PORT = GPIO_PORTA, .PIN = PIN2, .PIN_Speed = Low_Speed, .Active_State = Active_HIGH, .PIN_Type = Push_Pull},
         [PINA3] = {.PORT = GPIO_PORTA, .PIN = PIN3, .PIN_Speed = Low_Speed, .Active_State = Active_HIGH, .PIN_Type = Push_Pull},
