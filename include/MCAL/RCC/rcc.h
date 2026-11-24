@@ -164,4 +164,8 @@ RCC_Error_Status_t RCC_enuGetSysCLKFreq(u32 * Ref_u32Freq);
 RCC_Error_Status_t GetRCC_enuResetCause(RCC_ResetCause_t * Ref_enuResetCause);
 // 8
 RCC_Error_Status_t RCC_enuGetCLKStatus(CLK_Type_t Copy_enuCLKType,CLK_Status_t* Ref_enuCLKStatus);
+
+//9 edit for getting bus freq
+RCC_Error_Status_t RCC_enuGetPeripheralCLK(Peripheral_t Copy_enuPeripheral, u64 * Ref_u64PeripheralCLK);
+
 #endif

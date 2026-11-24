@@ -382,31 +382,6 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_PORT_Conf_t * Ref_strPINConf)
     Loc_enuGPIO_Error_Status = PIN_CONF_Check(Ref_strPINConf);
     if (Loc_enuGPIO_Error_Status == GPIO_OK)
     {
-        switch (Ref_strPINConf->PIN_State) //low or high
-        {
-        case PIN_LOW:
-            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BR(Ref_strPINConf->PIN));
-            break;
-        default:
-            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BS(Ref_strPINConf->PIN));
-            break;
-        }
-        //setting speed
-        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(GPIO_OSPEEDR_MASK, Double_pos(Ref_strPINConf->PIN)));
-        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(Ref_strPINConf->PIN_Speed, Double_pos(Ref_strPINConf->PIN)));
-
-        //setting PUPD
-        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(GPIO_PUPDR_MASK, Double_pos(Ref_strPINConf->PIN)));
-        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(Ref_strPINConf->PIN_PUPD, Double_pos(Ref_strPINConf->PIN)));
-
-        //setting Mode
-        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(GPIO_MODE_MASK, Double_pos(Ref_strPINConf->PIN)));
-        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(Ref_strPINConf->PIN_Mode, Double_pos(Ref_strPINConf->PIN)));
-
-        //setting Type
-        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(GPIO_Type_MASK, Ref_strPINConf->PIN));
-        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(Ref_strPINConf->PIN_Type, Ref_strPINConf->PIN));
-
         //setting AF
         switch (Ref_strPINConf->PIN)
         {
@@ -419,6 +394,32 @@ GPIO_Error_Status_t GPIO_enuPinInit(PIN_PORT_Conf_t * Ref_strPINConf)
             Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_AFRH, Masking_Value(Ref_strPINConf->PIN_AF, Quad_pos(Low_to_high_shif(Ref_strPINConf->PIN))));
             break;
         }
+        
+        switch (Ref_strPINConf->PIN_State) //low or high
+        {
+        case PIN_LOW:
+            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BR(Ref_strPINConf->PIN));
+            break;
+        default:
+            GPIOS[Ref_strPINConf->PORT]->GPIO_BSRR = Masking_bit(BS(Ref_strPINConf->PIN));
+            break;
+        }
+
+        //setting speed
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(GPIO_OSPEEDR_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OSPEEDR, Masking_Value(Ref_strPINConf->PIN_Speed, Double_pos(Ref_strPINConf->PIN)));
+
+        //setting PUPD
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(GPIO_PUPDR_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_PUPDR, Masking_Value(Ref_strPINConf->PIN_PUPD, Double_pos(Ref_strPINConf->PIN)));
+        
+        //setting Type
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(GPIO_Type_MASK, Ref_strPINConf->PIN));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_OTYPER, Masking_Value(Ref_strPINConf->PIN_Type, Ref_strPINConf->PIN));
+        
+        //setting Mode
+        Clear_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(GPIO_MODE_MASK, Double_pos(Ref_strPINConf->PIN)));
+        Set_Mask(GPIOS[Ref_strPINConf->PORT]->GPIO_MODER, Masking_Value(Ref_strPINConf->PIN_Mode, Double_pos(Ref_strPINConf->PIN)));
 
     }
 
@@ -448,7 +449,7 @@ static inline volatile u32 GPIO_u32TwoBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet
 static inline volatile u32 GPIO_u32FourBitMode (u32 Copy_u32Reg,u8 Copy_BitsToSet)
 {
     volatile u32 Loc_u32Reg = Copy_u32Reg;
-    for (u8 i =0;i<16;i++){
+    for (u8 i =0;i<8;i++){
         Loc_u32Reg <<= 4;
         Loc_u32Reg |= Copy_BitsToSet;
     }
@@ -475,21 +476,21 @@ GPIO_Error_Status_t GPIO_enuPORTInit(PIN_PORT_Conf_t * Ref_strPORTConf)
     {
         GPIO_voidClearingAllRegByMasking(Ref_strPORTConf->PORT);
 
-        volatile u32 Loc_u32ModeReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER,Ref_strPORTConf->PIN_Mode);
         volatile u32 Loc_u32TypeReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER,Ref_strPORTConf->PIN_Type);
         volatile u32 Loc_u32SpeedReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR,Ref_strPORTConf->PIN_Speed);
         volatile u32 Loc_u32PUPDReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR,Ref_strPORTConf->PIN_PUPD);
         volatile u32 Loc_u32ODRReg = GPIO_u32OneBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR,Ref_strPORTConf->PIN_State);
         volatile u32 Loc_u32AFRLReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL,Ref_strPORTConf->PIN_AF);
-        volatile u32 Loc_u32AFRHReg = GPIO_u32FourBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH,Ref_strPORTConf->PIN_AF);
+        volatile u32 Loc_u32AFRHReg = Loc_u32AFRLReg;
+        volatile u32 Loc_u32ModeReg = GPIO_u32TwoBitMode(GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER,Ref_strPORTConf->PIN_Mode);
 
-        GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER = Loc_u32ModeReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_OTYPER = Loc_u32TypeReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_OSPEEDR = Loc_u32SpeedReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_PUPDR = Loc_u32PUPDReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_ODR = Loc_u32ODRReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRL = Loc_u32AFRLReg;
         GPIOS[Ref_strPORTConf->PORT]->GPIO_AFRH = Loc_u32AFRHReg;
+        GPIOS[Ref_strPORTConf->PORT]->GPIO_MODER = Loc_u32ModeReg;
     }
     return Loc_enuGPIO_Error_Status;
 }

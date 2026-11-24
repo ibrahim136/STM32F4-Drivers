@@ -18,10 +18,19 @@ u8 ITI_Logo[8] = {
     0b10101,
     0b00101,
     0b00001};
-    
+    #define Clock 0
+    #define Calculator 1
+    #define Mode Calculator
 int main(void)
 {
+    #if Mode==Clock
     Clockenu_On(LCD_1, (u8 *)"   Hello ITI ");
     Clock_enuAddCustomChar(0, ITI_Logo);
+    #elif Mode == Calculator
+    Calculatorenu_On(LCD_1);
+
+    #endif
     Sched_Start();
+
+
 }

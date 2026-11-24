@@ -62,7 +62,7 @@ RCC_Error_Status_t RCC_enuCLKControl(CLK_Type_t Copy_enuCLKType, CLK_Status_t Co
     u32 Loc_u32TimeOut = TIMEOUT;
     u8 Loc_u8targetbit = 0;
     u8 Loc_u8readytbit = 0;
-    u8 Loc_u8check=0;
+    u8 Loc_u8check = 0;
     switch (Copy_enuCLKType)
     {
     case HSI:
@@ -202,7 +202,7 @@ RCC_Error_Status_t RCC_enuSelectSysCLK(CLK_Type_t Copy_enuCLKType)
         Set_Mask(RCC_reg->RCC_CFGR, Loc_u8targetSWValue << RCC_CFGR_SW);
         while ((RCC_reg->RCC_CFGR & RCC_CFGR_SWS_MASK) != (Loc_u8targetSWValue << RCC_CFGR_SWS) && --Loc_u32TimeOut)
             ;
-            
+
         if (Loc_u32TimeOut == 0)
         {
             Loc_enuRCC_Error_Status = RCC_Timeout;
@@ -220,7 +220,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
     switch (Copy_enuBus)
     {
     case AHB:
-        if (Copy_enuPrescaler > AHB_PRE_512 || Copy_enuPrescaler < AHB_PRE_1)
+        if (Copy_enuPrescaler != AHB_PRE_1 && (Copy_enuPrescaler < AHB_PRE_2 || Copy_enuPrescaler > AHB_PRE_512))
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -230,7 +230,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         break;
     case APB1:
-        if (Copy_enuPrescaler > APB1_PRE_16 || Copy_enuPrescaler < APB1_PRE_1)
+        if (Copy_enuPrescaler != APB1_PRE_1 && (Copy_enuPrescaler > APB1_PRE_16 || Copy_enuPrescaler < APB1_PRE_2))
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -240,7 +240,7 @@ RCC_Error_Status_t RCC_enuSetBusPrescaler(BUS_Type_t Copy_enuBus, Prescaler_t Co
         }
         break;
     case APB2:
-        if (Copy_enuPrescaler > APB2_PRE_16 || Copy_enuPrescaler < APB2_PRE_1)
+        if (Copy_enuPrescaler != APB2_PRE_1 && (Copy_enuPrescaler > APB2_PRE_16 || Copy_enuPrescaler < APB2_PRE_2))
         {
             Loc_enuRCC_Error_Status = RCC_InvalidParam;
         }
@@ -523,6 +523,95 @@ RCC_Error_Status_t GetRCC_enuResetCause(RCC_ResetCause_t *Ref_enuResetCause)
             Loc_u8BitPosition++;
         }
         Set_Bit(RCC_reg->RCC_CSR, RCC_CSR_RMVF);
+    }
+    return Loc_enuRCC_Error_Status;
+}
+
+static inline u16 PrescalerenuToDivisor(Prescaler_t Copy_enuPrescaler)
+{
+    u32 Loc_u32Divisor;
+    switch (Copy_enuPrescaler)
+    {
+    case AHB_PRE_1:
+        Loc_u32Divisor = 1;
+        break;
+    case AHB_PRE_2:
+    case APB1_PRE_2:
+        Loc_u32Divisor = 2;
+        break;
+    case AHB_PRE_4:
+    case APB1_PRE_4:
+        Loc_u32Divisor = 4;
+        break;
+    case AHB_PRE_8:
+    case APB1_PRE_8:
+        Loc_u32Divisor = 8;
+        break;
+    case AHB_PRE_16:
+    case APB1_PRE_16:
+        Loc_u32Divisor = 16;
+        break;
+    case AHB_PRE_64:
+        Loc_u32Divisor = 64;
+        break;
+    case AHB_PRE_128:
+        Loc_u32Divisor = 128;
+        break;
+    case AHB_PRE_256:
+        Loc_u32Divisor = 256;
+        break;
+    default:
+        Loc_u32Divisor = 512;
+        break;
+    }
+    return Loc_u32Divisor;
+}
+
+RCC_Error_Status_t RCC_enuGetPeripheralCLK(Peripheral_t Copy_enuPeripheral, u64 *Ref_u64PeripheralCLK)
+{
+    RCC_Error_Status_t Loc_enuRCC_Error_Status = RCC_OK;
+    Peripheral_Bus_t Loc_enuBUSCODE = Get_Mask(Copy_enuPeripheral, BUS_CODE_MASK);
+    Prescaler_t Loc_u32AHB_PRE;
+    Prescaler_t Loc_u32APB1_PRE;
+    Prescaler_t Loc_u32APB2_PRE;
+    u16 Loc_u32AHB_PRE_Div;
+    u16 Loc_u32APB1_PRE_Div;
+    u16 Loc_u32APB2_PRE_Div;
+
+    u32 Loc_u32SysCLKFreq;
+    Loc_enuRCC_Error_Status = RCC_enuGetSysCLKFreq(&Loc_u32SysCLKFreq);
+    if (Loc_enuRCC_Error_Status == RCC_OK && !Ref_u64PeripheralCLK)
+    {
+        Loc_enuRCC_Error_Status = RCC_InvalidPtr;
+    }
+    if (Loc_enuRCC_Error_Status == RCC_OK)
+    {
+        switch (Loc_enuBUSCODE)
+        {
+        case AHB1_BUS:
+        case AHB2_BUS:
+            Loc_u32AHB_PRE = Get_Mask_Value(Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_HPRE_MASK), RCC_CFGR_HPRE);
+            Loc_u32AHB_PRE_Div = PrescalerenuToDivisor(Loc_u32AHB_PRE);
+            *Ref_u64PeripheralCLK = Loc_u32SysCLKFreq / Loc_u32AHB_PRE_Div;
+            break;
+        case APB1_BUS:
+            Loc_u32AHB_PRE = Get_Mask_Value(Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_HPRE_MASK), RCC_CFGR_HPRE);
+            Loc_u32AHB_PRE_Div = PrescalerenuToDivisor(Loc_u32AHB_PRE);
+            Loc_u32APB1_PRE = Get_Mask_Value(Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_PPRE1_MASK), RCC_CFGR_PPRE1);
+            Loc_u32APB1_PRE_Div = PrescalerenuToDivisor(Loc_u32APB1_PRE);
+            *Ref_u64PeripheralCLK = Loc_u32SysCLKFreq / Loc_u32AHB_PRE_Div / Loc_u32APB1_PRE_Div;
+            break;
+        case APB2_BUS:
+            Loc_u32AHB_PRE = Get_Mask_Value(Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_HPRE_MASK), RCC_CFGR_HPRE);
+            Loc_u32AHB_PRE_Div = PrescalerenuToDivisor(Loc_u32AHB_PRE);
+            Loc_u32APB2_PRE = Get_Mask_Value(Get_Mask(RCC_reg->RCC_CFGR, RCC_CFGR_PPRE2_MASK), RCC_CFGR_PPRE2);
+            Loc_u32APB2_PRE_Div = PrescalerenuToDivisor(Loc_u32APB2_PRE);
+            *Ref_u64PeripheralCLK = Loc_u32SysCLKFreq / Loc_u32AHB_PRE_Div / Loc_u32APB2_PRE_Div;
+            break;
+        default:
+            Loc_enuRCC_Error_Status = RCC_InvalidParam;
+            break;
+        }
     }
     return Loc_enuRCC_Error_Status;
 }
