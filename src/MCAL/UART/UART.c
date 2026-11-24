@@ -221,6 +221,16 @@ UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t Copy_strU
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_OVER8);
             break;
         }
+        Clear_Mask(UARTS[Copy_enuUART_NO]->USART_CR2,USART_CR2_STOP_MASK);
+        switch(Copy_strUART_cfg.Stop_bit)
+        {
+            case _1_Stop_bit:
+            
+            break;
+            default:
+            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR2, USART_CR1_OVER8);
+            break;
+        }
 
     }
     return Loc_enuUART_Error_Status;
