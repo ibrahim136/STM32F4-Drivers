@@ -70,7 +70,7 @@ typedef struct
 #define USART_CR2_LINEN 14
 
 // USART_CR2 MASKS
-#define USART_CR2_ADD_MASK (0x7 << USART_CR2_ADD)
+#define USART_CR2_ADD_MASK (0xF << USART_CR2_ADD)
 #define USART_CR2_STOP_MASK (0x3 << USART_CR2_STOP)
 
 // USART_CR3 bit positions
@@ -95,7 +95,19 @@ typedef struct
 #define USART_GTPR_PSC_MASK (0xFF << USART_GTPR_PSC)
 #define USART_GTPR_GT_MASK (0xFF << USART_GTPR_GT)
 
+// BaudDiv equation
 
+#define BaudDiv1000(fclk, over8, BaudRate) (fclk * 1000 / (8 * (2 - over8) * BaudRate))
 
+#define BaudDivMantissa(BaudDiv1000) (BaudDiv1000 / 1000)
+#define ApproximateAfterDiv10(number) ((((number) % 10) > 4) ? (((number) / 10) + 1) : (((number) / 10)))
+#define BaudDivFraction(BaudDiv1000, over8) (((over8) == 1) ? ApproximateAfterDiv10(BaudDiv1000 % 1000 * 8 / 100) : ApproximateAfterDiv10(BaudDiv1000 % 1000 * 16 / 100))
+
+#define Check_Fraction(BaudDivMantissa, BaudDivFraction, over8)                            \
+    if (((over8) == 1 && BaudDivFraction == 8) || ((over8) == 0 && BaudDivFraction == 16)) \
+    {                                                                                      \
+        BaudDivMantissa++;                                                                 \
+        BaudDivFraction = 0;                                                               \
+    }
 
 #endif

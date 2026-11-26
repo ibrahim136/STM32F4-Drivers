@@ -1,18 +1,20 @@
+#ifndef UART_H
+#define UART_H
+
 #include "STD_types.h"
 
 
-#define UART_INTERUPT_IDLEIE (1<< 4)
-#define UART_INTERUPT_RXNEIE (1<< 5)
-#define UART_INTERUPT_TCIE (1<< 6)
-#define UART_INTERUPT_TXEIE (1<< 7)
-#define UART_INTERUPT_PEIE (1<< 8)
+#define UART_INTERUPT_IDLEIE (1ULL<< 4)
+#define UART_INTERUPT_RXNEIE (1ULL<< 5)
+#define UART_INTERUPT_TCIE (1ULL<< 6)
+#define UART_INTERUPT_TXEIE (1ULL<< 7)
+#define UART_INTERUPT_PEIE (1ULL<< 8)
 
-#define UART_INTERUPT_LBDIE (1<< 6 +32)
+#define UART_INTERUPT_LBDIE (1ULL<< 6 +32)
 
 
-#define UART_INTERUPT_EIE (1<< 0 +32+16)
-#define UART_INTERUPT_RTSE (1<< 8 +32+16)
-#define UART_INTERUPT_CTSIE (1<< 10 +32+16)
+#define UART_INTERUPT_EIE (1ULL<< 0 +32+16)
+#define UART_INTERUPT_CTSIE (1ULL<< 10 +32+16)
 
 
 
@@ -32,6 +34,8 @@ typedef enum
     UART_InvalidReciever,
     UART_InvalidTransmitter,
     UART_InvalidStopBit,
+    UART_InvalidZeroBaudRate,
+    UART_InvalidPtr,
 
 } UART_Error_Status_t;
 
@@ -103,4 +107,6 @@ typedef struct
 
 
 
-UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t Copy_strUART_cfg);
+UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t* Copy_strUART_cfg);
+
+#endif

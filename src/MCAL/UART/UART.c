@@ -1,6 +1,7 @@
 #include "UART.h"
 #include "UART_priv.h"
 #include "Bit_math.h"
+#include "rcc.h"
 
 static volatile UART_reg_t *UARTS[UART_Count] = {UART1_reg, UART2_reg, UART6_reg};
 
@@ -107,7 +108,7 @@ static inline UART_Error_Status_t Check_Stop(Stop_bit_t Copy_enuStopBit)
     UART_Error_Status_t Loc_enuUART_Error_Status = UART_OK;
     switch (Copy_enuStopBit)
     {
-    case _1_Stop_bit ... _1_and_half_Stop_bit :
+    case _1_Stop_bit ... _1_and_half_Stop_bit:
         break;
     default:
         Loc_enuUART_Error_Status = UART_InvalidStopBit;
@@ -116,6 +117,19 @@ static inline UART_Error_Status_t Check_Stop(Stop_bit_t Copy_enuStopBit)
     return Loc_enuUART_Error_Status;
 }
 
+static inline UART_Error_Status_t Check_BaudRate(u32 Copy_enuBaudRate)
+{
+    UART_Error_Status_t Loc_enuUART_Error_Status = UART_OK;
+    switch (Copy_enuBaudRate)
+    {
+    case 0:
+        Loc_enuUART_Error_Status = UART_InvalidZeroBaudRate;
+        break;
+    default:
+        break;
+    }
+    return Loc_enuUART_Error_Status;
+}
 
 static inline UART_Error_Status_t Checks(UART_NO_t Copy_enuUART_NO, UART_cfg_t Copy_strUART_cfg)
 {
@@ -152,16 +166,76 @@ static inline UART_Error_Status_t Checks(UART_NO_t Copy_enuUART_NO, UART_cfg_t C
     {
         Loc_enuUART_Error_Status = Check_Stop(Copy_strUART_cfg.Stop_bit);
     }
+    if (Loc_enuUART_Error_Status == UART_OK)
+    {
+        Loc_enuUART_Error_Status = Check_BaudRate(Copy_strUART_cfg.BaudRate);
+    }
     return Loc_enuUART_Error_Status;
 }
 
-UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t Copy_strUART_cfg)
+UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t *Copy_strUART_cfg)
 {
-    UART_Error_Status_t Loc_enuUART_Error_Status = Checks(Copy_enuUART_NO, Copy_strUART_cfg);
+    UART_Error_Status_t Loc_enuUART_Error_Status = UART_OK;
+    if (Copy_strUART_cfg == nullptr)
+    {
+        Loc_enuUART_Error_Status = UART_InvalidPtr;
+    }
+    if (Loc_enuUART_Error_Status == UART_OK)
+    {
+        Loc_enuUART_Error_Status = Checks(Copy_enuUART_NO, *Copy_strUART_cfg);
+    }
     if (Loc_enuUART_Error_Status == UART_OK)
     {
         Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_UE);
-        switch (Copy_strUART_cfg.Break)
+        switch (Copy_strUART_cfg->Data_Size)
+        {
+        case _8_bit:
+            Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_M);
+            break;
+        default:
+            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_M);
+            break;
+        }
+        Clear_Mask(UARTS[Copy_enuUART_NO]->USART_CR2, USART_CR2_STOP_MASK);
+        u32 Loc_u32StopMaskToSet = Masking_Value(Copy_strUART_cfg->Stop_bit, USART_CR2_STOP);
+        Set_Mask(UARTS[Copy_enuUART_NO]->USART_CR2, Loc_u32StopMaskToSet);
+
+        u64 Loc_u64UARTfclk;
+        switch (Copy_enuUART_NO)
+        {
+        case UART1:
+            RCC_enuGetPeripheralCLK(Peripheral_USART1, &Loc_u64UARTfclk);
+            break;
+        case UART2:
+            RCC_enuGetPeripheralCLK(Peripheral_USART2, &Loc_u64UARTfclk);
+            break;
+        default:
+            RCC_enuGetPeripheralCLK(Peripheral_USART6, &Loc_u64UARTfclk);
+            break;
+        }
+
+        u32 Loc_BaudDiv1000 = BaudDiv1000(Loc_u64UARTfclk, Copy_strUART_cfg->Over_Sampling, Copy_strUART_cfg->BaudRate);
+        u16 Loc_u16DIV_Mantissa = BaudDivMantissa(Loc_BaudDiv1000);
+        u8 Loc_u8Fraction = BaudDivFraction(Loc_BaudDiv1000, Copy_strUART_cfg->Over_Sampling);
+        Check_Fraction(Loc_u16DIV_Mantissa, Loc_u8Fraction, Copy_strUART_cfg->Over_Sampling);
+
+        u16 Loc_16USART_BRR = Masking_Value(Loc_u16DIV_Mantissa, USART_BRR_DIV_Mantissa);
+        Set_Mask(Loc_16USART_BRR, Loc_u8Fraction);
+        Clear_Mask(UARTS[Copy_enuUART_NO]->USART_BRR, USART_BRR_DIV_Mantissa_MASK);
+        Clear_Mask(UARTS[Copy_enuUART_NO]->USART_BRR, USART_BRR_DIV_Fraction_MASK);
+        Set_Mask(UARTS[Copy_enuUART_NO]->USART_BRR, Loc_16USART_BRR);
+
+        switch (Copy_strUART_cfg->Transmitter)
+        {
+        case Transmitter_Enable:
+            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_TE);
+            break;
+        default:
+            Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_TE);
+            break;
+        }
+
+        switch (Copy_strUART_cfg->Break)
         {
         case Break_Enable:
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_SBK);
@@ -170,68 +244,41 @@ UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t Copy_strU
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_SBK);
             break;
         }
-        switch(Copy_strUART_cfg.Reciever)
+        switch (Copy_strUART_cfg->Reciever)
         {
-            case Reciever_Enable:
+        case Reciever_Enable:
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_RE);
             break;
-            default:
+        default:
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_RE);
             break;
         }
-        switch(Copy_strUART_cfg.Transmitter)
+
+        switch (Copy_strUART_cfg->Parity)
         {
-            case Transmitter_Enable:
-            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_TE);
-            break;
-            default:
-            Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_TE);
-            break;
-        }
-        switch(Copy_strUART_cfg.Parity)
-        {
-            case No_Parity:
+        case No_Parity:
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PS);
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PCE);
             break;
-            case Odd_Parity:
+        case Odd_Parity:
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PS);
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PCE);
-            default:
+            break;
+        default:
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PS);
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_PCE);
+            break;
+        }
 
-            break;
-        }
-        switch (Copy_strUART_cfg.Data_Size)
+        switch (Copy_strUART_cfg->Over_Sampling)
         {
-            case _8_bit:
-            Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_M);
-            break;
-            default:
-            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_M);
-            break;
-        }
-        switch(Copy_strUART_cfg.Over_Sampling)
-        {
-            case Over_16:
+        case Over_16:
             Clear_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_OVER8);
             break;
-            default:
+        default:
             Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR1, USART_CR1_OVER8);
             break;
         }
-        Clear_Mask(UARTS[Copy_enuUART_NO]->USART_CR2,USART_CR2_STOP_MASK);
-        switch(Copy_strUART_cfg.Stop_bit)
-        {
-            case _1_Stop_bit:
-            
-            break;
-            default:
-            Set_Bit(UARTS[Copy_enuUART_NO]->USART_CR2, USART_CR1_OVER8);
-            break;
-        }
-
     }
     return Loc_enuUART_Error_Status;
 }
