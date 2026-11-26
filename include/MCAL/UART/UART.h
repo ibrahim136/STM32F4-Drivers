@@ -3,11 +3,10 @@
 
 #include "STD_types.h"
 
+typedef void(*ptrtofun)(void);
 
 #define UART_INTERUPT_IDLEIE (1ULL<< 4)
 #define UART_INTERUPT_RXNEIE (1ULL<< 5)
-#define UART_INTERUPT_TCIE (1ULL<< 6)
-#define UART_INTERUPT_TXEIE (1ULL<< 7)
 #define UART_INTERUPT_PEIE (1ULL<< 8)
 
 #define UART_INTERUPT_LBDIE (1ULL<< 6 +32)
@@ -36,6 +35,11 @@ typedef enum
     UART_InvalidStopBit,
     UART_InvalidZeroBaudRate,
     UART_InvalidPtr,
+    UART_InvalidInterruptFlags,
+
+    UART_Busy,
+    UART_NO_DATA,
+    UART_Invalidcbf
 
 } UART_Error_Status_t;
 
@@ -105,8 +109,20 @@ typedef struct
     Stop_bit_t Stop_bit;
 } UART_cfg_t;
 
+typedef struct
+{
+    u8 * buffer;
+    u64 size;
 
+}UART_Buffer_t;
 
 UART_Error_Status_t UART_enuInit(UART_NO_t Copy_enuUART_NO, UART_cfg_t* Copy_strUART_cfg);
+UART_Error_Status_t UART_enuSendByte(UART_NO_t Copy_enuUART_NO, u16 Copy_u16Byte);
+UART_Error_Status_t UART_enuReceiveByte(UART_NO_t Copy_enuUART_NO, u16* Ref_u16Byte);
+UART_Error_Status_t UART_enuSetTXcbf(UART_NO_t Copy_enuUART_NO,ptrtofun Ref_cbf);
+UART_Error_Status_t UART_enuSetRXcbf(UART_NO_t Copy_enuUART_NO,ptrtofun Ref_cbf);
+
+UART_Error_Status_t UART_enuSendBuffer(UART_NO_t Copy_enuUART_NO,UART_Buffer_t * Ref_strBuffer);
+UART_Error_Status_t UART_enuReceiveBuffer(UART_NO_t Copy_enuUART_NO,UART_Buffer_t * Ref_strBuffer);
 
 #endif

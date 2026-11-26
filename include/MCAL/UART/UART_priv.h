@@ -97,11 +97,11 @@ typedef struct
 
 // BaudDiv equation
 
-#define BaudDiv1000(fclk, over8, BaudRate) (fclk * 1000 / (8 * (2 - over8) * BaudRate))
+#define BaudDiv1000(fclk, over8, BaudRate) ((fclk) * 1000 / (8 * (2 - (over8)) * (BaudRate)))
 
-#define BaudDivMantissa(BaudDiv1000) (BaudDiv1000 / 1000)
+#define BaudDivMantissa(BaudDiv1000) ((BaudDiv1000) / (1000))
 #define ApproximateAfterDiv10(number) ((((number) % 10) > 4) ? (((number) / 10) + 1) : (((number) / 10)))
-#define BaudDivFraction(BaudDiv1000, over8) (((over8) == 1) ? ApproximateAfterDiv10(BaudDiv1000 % 1000 * 8 / 100) : ApproximateAfterDiv10(BaudDiv1000 % 1000 * 16 / 100))
+#define BaudDivFraction(BaudDiv1000, over8) (((over8) == 1) ? ApproximateAfterDiv10((BaudDiv1000) % 1000 * 8 / 100) : ApproximateAfterDiv10((BaudDiv1000) % 1000 * 16 / 100))
 
 #define Check_Fraction(BaudDivMantissa, BaudDivFraction, over8)                            \
     if (((over8) == 1 && BaudDivFraction == 8) || ((over8) == 0 && BaudDivFraction == 16)) \
@@ -109,5 +109,15 @@ typedef struct
         BaudDivMantissa++;                                                                 \
         BaudDivFraction = 0;                                                               \
     }
+
+#define Interrupt_MASK (UART_INTERUPT_IDLEIE | UART_INTERUPT_RXNEIE | UART_INTERUPT_PEIE | UART_INTERUPT_LBDIE | UART_INTERUPT_EIE | UART_INTERUPT_CTSIE)
+#define USART_CR1_Interrups (UART_INTERUPT_IDLEIE | UART_INTERUPT_RXNEIE | UART_INTERUPT_PEIE)
+#define USART_CR2_Interrups (UART_INTERUPT_LBDIE)
+#define USART_CR3_Interrups (UART_INTERUPT_EIE | UART_INTERUPT_CTSIE)
+
+#define Shift_32(reg) Shift_Right(reg,32)
+#define Shift_32_16(reg) Shift_Right(reg,(32+16))
+
+
 
 #endif
